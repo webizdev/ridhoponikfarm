@@ -1,237 +1,248 @@
-// Ridhoponic Farm - Web Logic & Cart System (Demo Mode - Local Storage)
-document.addEventListener('DOMContentLoaded', () => {
-    // --- Scroll Reveal Animation ---
-    const revealElements = document.querySelectorAll('.reveal');
-    const revealOnScroll = () => {
-        for (let i = 0; i < revealElements.length; i++) {
-            const windowHeight = window.innerHeight;
-            const elementTop = revealElements[i].getBoundingClientRect().top;
-            const elementVisible = 150;
-            if (elementTop < windowHeight - elementVisible) {
-                revealElements[i].classList.add('active');
-            }
-        }
-    };
-    window.addEventListener('scroll', revealOnScroll);
-    revealOnScroll();
+/**
+ * Ridhoponic Farm - App Logic
+ */
 
-    // --- Smooth Scrolling ---
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const targetId = this.getAttribute('href');
-            if (targetId === '#') return;
-            const targetElement = document.querySelector(targetId);
-            if (targetElement) {
-                const headerOffset = 80;
-                const elementPosition = targetElement.getBoundingClientRect().top;
-                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
-            }
-        });
-    });
+const app = {
+    cart: [],
+    products: [],
+    siteContent: {},
 
-    // --- Cart System ---
-    let cart = JSON.parse(localStorage.getItem('ridhoponic_cart')) || [];
-    const cartSidebar = document.getElementById('cart-sidebar');
-    const cartOverlay = document.getElementById('cart-overlay');
-    const cartToggle = document.getElementById('cart-toggle');
-    const cartClose = document.getElementById('cart-close');
-    const cartCount = document.getElementById('cart-count');
-    const cartItemsContainer = document.getElementById('cart-items-container');
-    const cartTotalElement = document.getElementById('cart-total');
-    const checkoutBtn = document.getElementById('checkout-btn');
-    const continueBtn = document.getElementById('continue-shopping-btn');
+    init() {
+        this.loadLocalData();
+        this.bindEvents();
+        this.setupRevealAnimations();
+        this.renderProducts();
+        this.updateCartCount();
+        this.applySiteContent();
+    },
 
-    const toggleCart = () => {
-        cartSidebar.classList.toggle('open');
-        cartOverlay.classList.toggle('open');
-    };
-
-    cartToggle?.addEventListener('click', toggleCart);
-    cartClose?.addEventListener('click', toggleCart);
-    cartOverlay?.addEventListener('click', toggleCart);
-
-    if (continueBtn) {
-        continueBtn.addEventListener('click', () => {
-            if (cartSidebar.classList.contains('open')) toggleCart();
-            const catalogSection = document.getElementById('catalog');
-            if (catalogSection) {
-                window.scrollTo({ top: catalogSection.offsetTop - 80, behavior: 'smooth' });
-            }
-        });
-    }
-
-    const saveAndRenderCart = () => {
-        localStorage.setItem('ridhoponic_cart', JSON.stringify(cart));
-        renderCart();
-    };
-
-    const renderCart = () => {
-        if (!cartItemsContainer) return;
-        cartItemsContainer.innerHTML = cart.map(item => `
-            <div class="cart-item">
-                <div class="cart-item-info">
-                    <h4>${item.name}</h4>
-                    <p>${item.quantity} x IDR ${item.price.toLocaleString('id-ID')}</p>
-                </div>
-                <div class="cart-item-actions">
-                    <button class="qty-btn" onclick="updateCartItem('${item.id}', ${item.quantity - 1})">-</button>
-                    <span>${item.quantity}</span>
-                    <button class="qty-btn" onclick="updateCartItem('${item.id}', ${item.quantity + 1})">+</button>
-                </div>
-            </div>
-        `).join('');
-
-        const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        if (cartTotalElement) cartTotalElement.textContent = `IDR ${total.toLocaleString('id-ID')}`;
-        if (cartCount) cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
-    };
-
-    window.updateCartItem = (id, newQty) => {
-        if (newQty <= 0) {
-            cart = cart.filter(item => item.id !== id);
+    loadLocalData() {
+        // Products
+        const localProducts = localStorage.getItem('rp_products');
+        if (localProducts) {
+            this.products = JSON.parse(localProducts);
         } else {
-            const item = cart.find(i => i.id === id);
-            if (item) item.quantity = newQty;
+            // Default demo products from HTML
+            this.products = [
+                { id: 1, name: 'Selada Hijau', category: 'harvest', price: 18000, image: 'assets/hero_lettuce.png' },
+                { id: 2, name: 'Daun Bawang', category: 'harvest', price: 12000, image: 'assets/product_scallions.png' },
+                { id: 3, name: 'Daun Pegagan', category: 'harvest', price: 25000, image: 'assets/product_pegagan_popohan.png' },
+                { id: 4, name: 'Daun Popohan', category: 'harvest', price: 22000, image: 'assets/product_pegagan_popohan.png' },
+                { id: 5, name: 'Benih Sayuran Premium', category: 'supplies', price: 15000, image: 'assets/product_seeds_equipment.png' },
+                { id: 6, name: 'Nutrisi AB Mix', category: 'supplies', price: 45000, image: 'assets/product_seeds_equipment.png' },
+                { id: 7, name: 'Netpot Hidroponik', category: 'supplies', price: 10000, image: 'assets/product_seeds_equipment.png' }
+            ];
         }
-        saveAndRenderCart();
-    };
 
-    // Mobile Menu Toggle
-    const menuToggle = document.getElementById('menu-toggle');
-    const mainNav = document.getElementById('main-nav');
-    menuToggle?.addEventListener('click', () => {
-        mainNav.classList.toggle('active');
-    });
+        // Cart
+        const localCart = localStorage.getItem('rp_cart');
+        this.cart = localCart ? JSON.parse(localCart) : [];
 
-    // Close mobile menu on link click
-    document.querySelectorAll('.nav-links-desktop a').forEach(link => {
-        link.addEventListener('click', () => mainNav.classList.remove('active'));
-    });
+        // Content
+        const localContent = localStorage.getItem('rp_content');
+        if (localContent) {
+            this.siteContent = JSON.parse(localContent);
+        }
+    },
 
-    // --- Content Management (Local Storage) ---
-    const defaultContent = {
-        'hero-subtitle': 'Pertanian Berkelanjutan',
-        'hero-title': 'Hidroponik Premium, <br>Segar Sampai Meja Anda.',
-        'hero-desc': 'Menanam sayuran padat nutrisi di lingkungan terkontrol tanpa pestisida. Pengiriman segar langsung dari kebun kami di Sumedang.',
-        'hero-img': 'assets/hero_lettuce.png',
-        'about-title': 'Tentang Kami',
-        'about-p1': '<strong>RIDHOPONIC FARM</strong> hadir sebagai solusi pertanian masa depan yang memadukan teknologi hidroponik modern dengan komitmen terhadap keamanan pangan. Berbasis di Kecamatan Tanjungsari, Kabupaten Sumedang, Jawa Barat, kami berfokus pada produksi sayuran segar berkualitas tinggi yang dikembangkan di lingkungan terkontrol.',
-        'about-p2': 'Kepercayaan konsumen adalah prioritas utama kami. Oleh karena itu, seluruh operasional dan produk RIDHOPONIC FARM telah resmi terdaftar dalam sistem <strong style="white-space: nowrap;">NIB: 1712240062057</strong> dan menjamin aspek kehalalan melalui <strong>Sertifikasi HALAL Indonesia</strong>. Dengan standar manajemen nutrisi yang ketat dan sistem panen harian, kami memastikan setiap helai sayuran yang sampai ke meja Anda adalah produk yang legal, aman, and penuh nutrisi.',
-        'about-img': 'assets/hero_lettuce.png',
-        'contact-address': 'Jalan Raya Tanjungsari Nomor 345, RT/RW 003/004, Dusun Langensari, Desa Gudang, Kec. Tanjungsari, Kab. Sumedang, Jawa Barat, 45362',
-        'contact-wa': '085176960803 | 085220933263',
-        'contact-hours': 'Senin – Jumat: 08:00 - 17:00 WIB'
-    };
-
-    const fetchContent = () => {
-        const content = JSON.parse(localStorage.getItem('ridhoponic_content')) || defaultContent;
-        Object.keys(content).forEach(id => {
+    applySiteContent() {
+        if (!this.siteContent) return;
+        
+        Object.keys(this.siteContent).forEach(id => {
             const el = document.getElementById(id);
             if (el) {
-                if (el.tagName === 'IMG') el.src = content[id];
-                else el.innerHTML = content[id];
+                if (el.tagName === 'IMG') {
+                    el.src = this.siteContent[id];
+                } else {
+                    el.textContent = this.siteContent[id];
+                }
             }
         });
-    };
+    },
 
-    // --- Product Management (Local Storage) ---
-    const defaultProducts = [
-        { id: "1", name: "Selada Hijau", category: "harvest", price: 18000, description: "Renyah & Manis", image: "assets/hero_lettuce.png" },
-        { id: "2", name: "Daun Bawang", category: "harvest", price: 12000, description: "Aromatik Segar", image: "assets/product_scallions.png" },
-        { id: "3", name: "Daun Pegagan", category: "harvest", price: 25000, description: "Tanaman Herbal", image: "assets/product_pegagan_popohan.png" },
-        { id: "4", name: "Daun Popohan", category: "harvest", price: 22000, description: "Sayuran Tradisional", image: "assets/product_pegagan_popohan.png" },
-        { id: "5", name: "Benih Sayuran Premium", category: "supplies", price: 15000, description: "Berbagai Varian", image: "assets/product_seeds_equipment.png" },
-        { id: "6", name: "Nutrisi AB Mix", category: "supplies", price: 45000, description: "1 Liter Set", image: "assets/product_seeds_equipment.png" },
-        { id: "7", name: "Netpot Hidroponik", category: "supplies", price: 10000, description: "Set 20 Pcs", image: "assets/product_seeds_equipment.png" }
-    ];
+    bindEvents() {
+        // Cart Toggle
+        document.getElementById('cart-toggle').addEventListener('click', () => this.toggleCart(true));
+        document.getElementById('cart-close').addEventListener('click', () => this.toggleCart(false));
+        document.getElementById('cart-overlay').addEventListener('click', () => this.toggleCart(false));
+        document.getElementById('continue-shopping-btn').addEventListener('click', () => this.toggleCart(false));
 
-    let products = [];
-    const catalogGrid = document.querySelector('.catalog-grid');
+        // Mobile Menu
+        document.getElementById('menu-toggle').addEventListener('click', () => {
+            document.getElementById('main-nav').classList.toggle('active');
+        });
 
-    const fetchProducts = () => {
-        products = JSON.parse(localStorage.getItem('ridhoponic_products')) || defaultProducts;
-        renderProducts();
-    };
+        // Filter Logic
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const filter = e.target.getAttribute('data-filter');
+                this.filterProducts(filter);
+                
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+            });
+        });
 
-    const renderProducts = () => {
-        if (!catalogGrid) return;
-        catalogGrid.innerHTML = products.map(product => `
-            <article class="product-card reveal active" data-category="${product.category}">
+        // Checkout
+        document.getElementById('checkout-btn').addEventListener('click', () => this.checkout());
+
+        // Delegation for Add to Cart
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('add-to-cart-btn')) {
+                const id = parseInt(e.target.getAttribute('data-id'));
+                const name = e.target.getAttribute('data-name');
+                const price = parseInt(e.target.getAttribute('data-price'));
+                this.addToCart(id, name, price);
+            }
+        });
+    },
+
+    renderProducts() {
+        const grid = document.querySelector('.catalog-grid');
+        if (!grid) return;
+        
+        grid.innerHTML = this.products.map(p => `
+            <article class="product-card reveal active" data-category="${p.category}">
                 <div class="product-image">
-                    <img src="${product.image}" alt="${product.name}">
+                    <img src="${p.image}" alt="${p.name}">
                 </div>
                 <div class="product-info">
                     <div>
-                        <h3>${product.name}</h3>
-                        <p>${product.description || ''}</p>
+                        <h3>${p.name}</h3>
+                        <p>${p.category === 'harvest' ? 'Segar & Organik' : 'Kualitas Premium'}</p>
                     </div>
-                    <span class="product-price">${(product.price / 1000).toFixed(0)}rb</span>
+                    <span class="product-price">${(p.price / 1000)}rb</span>
                 </div>
-                <button class="add-to-cart-btn" 
-                    data-id="${product.id}" 
-                    data-name="${product.name}" 
-                    data-price="${product.price}">Tambah ke Keranjang</button>
+                <button class="add-to-cart-btn" data-id="${p.id}" data-name="${p.name}" data-price="${p.price}">Tambah ke Keranjang</button>
             </article>
         `).join('');
+    },
 
-        document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const id = btn.getAttribute('data-id');
-                const name = btn.getAttribute('data-name');
-                const price = parseInt(btn.getAttribute('data-price'));
-                const existing = cart.find(i => i.id == id);
-                if (existing) existing.quantity++;
-                else cart.push({ id, name, price, quantity: 1 });
-                saveAndRenderCart();
-                if (!cartSidebar.classList.contains('open')) toggleCart();
-            });
+    filterProducts(category) {
+        const cards = document.querySelectorAll('.product-card');
+        cards.forEach(card => {
+            if (category === 'all' || card.getAttribute('data-category') === category) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
         });
-    };
+    },
 
-    // Checkout via WhatsApp & Save Order Locally
-    checkoutBtn?.addEventListener('click', () => {
-        if (cart.length === 0) return alert('Keranjang kosong!');
-        const total = cart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
-
-        // Save order to Local Storage for Admin
-        const orders = JSON.parse(localStorage.getItem('ridhoponic_orders')) || [];
-        const newOrder = {
-            id: Date.now(),
-            created_at: new Date().toISOString(),
-            items: [...cart],
-            total: total,
-            status: 'Pending'
-        };
-        orders.push(newOrder);
-        localStorage.setItem('ridhoponic_orders', JSON.stringify(orders));
-
-        // Format WhatsApp Message
-        let msg = 'Halo Ridhoponic Farm, saya memesan:\n\n';
-        cart.forEach((i, idx) => msg += `${idx+1}. ${i.name} (${i.quantity}x)\n`);
-        msg += `\nTotal: IDR ${total.toLocaleString('id-ID')}`;
-        window.open(`https://wa.me/6285176960803?text=${encodeURIComponent(msg)}`, '_blank');
+    addToCart(id, name, price) {
+        const existing = this.cart.find(item => item.id === id);
+        if (existing) {
+            existing.qty += 1;
+        } else {
+            this.cart.push({ id, name, price, qty: 1 });
+        }
         
-        cart = [];
-        saveAndRenderCart();
-        toggleCart();
-    });
+        this.saveCart();
+        this.updateCartCount();
+        this.renderCart();
+        this.toggleCart(true);
+    },
 
-    // Initial load
-    fetchContent();
-    fetchProducts();
-    renderCart();
+    removeFromCart(id) {
+        this.cart = this.cart.filter(item => item.id !== id);
+        this.saveCart();
+        this.updateCartCount();
+        this.renderCart();
+    },
 
-    // Filter Logic
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            const filter = btn.getAttribute('data-filter');
-            document.querySelectorAll('.product-card').forEach(card => {
-                card.style.display = (filter === 'all' || card.dataset.category === filter) ? 'block' : 'none';
-            });
+    saveCart() {
+        localStorage.setItem('rp_cart', JSON.stringify(this.cart));
+    },
+
+    updateCartCount() {
+        const count = this.cart.reduce((acc, item) => acc + item.qty, 0);
+        document.getElementById('cart-count').textContent = count;
+    },
+
+    toggleCart(open) {
+        const sidebar = document.getElementById('cart-sidebar');
+        const overlay = document.getElementById('cart-overlay');
+        if (open) {
+            sidebar.classList.add('open');
+            overlay.classList.add('active');
+            this.renderCart();
+        } else {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+        }
+    },
+
+    renderCart() {
+        const container = document.getElementById('cart-items-container');
+        if (this.cart.length === 0) {
+            container.innerHTML = '<p class="empty-msg">Keranjang Anda kosong.</p>';
+            document.getElementById('cart-total').textContent = 'IDR 0';
+            return;
+        }
+
+        let total = 0;
+        container.innerHTML = this.cart.map(item => {
+            total += item.price * item.qty;
+            return `
+                <div class="cart-item">
+                    <div>
+                        <h4>${item.name}</h4>
+                        <p>${item.qty} x IDR ${item.price.toLocaleString()}</p>
+                    </div>
+                    <button onclick="app.removeFromCart(${item.id})" style="background:none; border:none; color: #ff4d4d; cursor:pointer;">Hapus</button>
+                </div>
+            `;
+        }).join('');
+
+        document.getElementById('cart-total').textContent = `IDR ${total.toLocaleString()}`;
+    },
+
+    checkout() {
+        if (this.cart.length === 0) return;
+        
+        const total = this.cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+        let message = "Halo Ridhoponic Farm, saya ingin memesan:\n\n";
+        
+        this.cart.forEach(item => {
+            message += `- ${item.name} (${item.qty}x)\n`;
         });
-    });
-});
+        
+        message += `\nTotal: IDR ${total.toLocaleString()}`;
+        message += `\n\nMohon informasi selanjutnya. Terima kasih!`;
+        
+        const waUrl = `https://wa.me/6285176960803?text=${encodeURIComponent(message)}`;
+        
+        // Save to demo orders
+        const order = {
+            id: Date.now(),
+            customer_name: 'WhatsApp Customer',
+            items: this.cart,
+            total: total,
+            date: new Date().toISOString()
+        };
+        const localOrders = localStorage.getItem('rp_orders');
+        const orders = localOrders ? JSON.parse(localOrders) : [];
+        orders.unshift(order);
+        localStorage.setItem('rp_orders', JSON.stringify(orders));
+
+        window.open(waUrl, '_blank');
+        this.cart = [];
+        this.saveCart();
+        this.updateCartCount();
+        this.toggleCart(false);
+    },
+
+    setupRevealAnimations() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => app.init());
