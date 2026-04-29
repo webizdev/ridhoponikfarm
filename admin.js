@@ -1,272 +1,324 @@
-/**
- * Admin Dashboard Logic
- * RIDHOPONICFARM
- */
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Security & Session Management (Local Storage) ---
+    const loginOverlay = document.getElementById('login-overlay');
+    const dashboard = document.getElementById('dashboard');
+    const passwordInput = document.getElementById('admin-password');
+    const loginBtn = document.getElementById('login-btn');
+    const SESSION_TIMEOUT = 60 * 60 * 1000; // 1 hour
 
-const admin = {
-    currentSection: 'dashboard',
-    products: [],
-    orders: [],
-    siteContent: {},
+    const getSettings = () => JSON.parse(localStorage.getItem('ridhoponic_settings')) || { password: '12345' };
 
-    init() {
-        this.checkAuth();
-        this.bindEvents();
-        this.loadData();
-    },
-
-    checkAuth() {
-        const isAuth = sessionStorage.getItem('admin_auth');
-        if (isAuth) {
-            document.getElementById('login-overlay').style.display = 'none';
+    const checkAuth = () => {
+        const settings = getSettings();
+        if (passwordInput.value === settings.password) {
+            loginOverlay.style.display = 'none';
+            dashboard.classList.add('visible');
+            localStorage.setItem('ridhoponic_session', Date.now());
+            initDashboard();
+        } else {
+            alert('Password salah!');
         }
-    },
+    };
 
-    bindEvents() {
-        // Navigation
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const section = item.getAttribute('data-section');
-                this.showSection(section);
-            });
-        });
+    const updateActivity = () => {
+        if (!loginOverlay.style.display || loginOverlay.style.display === 'flex') return;
+        localStorage.setItem('ridhoponic_session', Date.now());
+    };
 
-        // Sidebar Toggle
-        document.getElementById('sidebar-toggle').addEventListener('click', () => {
-            document.getElementById('sidebar').classList.add('active');
-            document.getElementById('sidebar-overlay').classList.add('active');
-        });
+    const checkSession = () => {
+        const lastActivity = localStorage.getItem('ridhoponic_session');
+        if (lastActivity && (Date.now() - lastActivity > SESSION_TIMEOUT)) {
+            alert('Sesi habis. Silakan login kembali.');
+            logout();
+        }
+    };
 
-        document.getElementById('sidebar-overlay').addEventListener('click', () => {
-            document.getElementById('sidebar').classList.remove('active');
-            document.getElementById('sidebar-overlay').classList.remove('active');
-        });
+    const logout = () => {
+        localStorage.removeItem('ridhoponic_session');
+        window.location.reload();
+    };
 
-        // Login
-        document.getElementById('login-btn').addEventListener('click', () => {
-            const pass = document.getElementById('login-pass').value;
-            // Simple demo auth
-            if (pass === '12345') {
-                sessionStorage.setItem('admin_auth', 'true');
-                document.getElementById('login-overlay').style.display = 'none';
-            } else {
-                alert('Password salah!');
-            }
-        });
+    loginBtn.addEventListener('click', checkAuth);
+    passwordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') checkAuth(); });
+    ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(e => document.addEventListener(e, updateActivity, true));
+    setInterval(checkSession, 60000); // Check every minute
 
-        // Logout
-        document.getElementById('logout-btn').addEventListener('click', () => {
-            sessionStorage.removeItem('admin_auth');
-            location.reload();
-        });
+    // Mobile Sidebar Toggle
+    const adminMenuToggle = document.getElementById('admin-menu-toggle');
+    const adminSidebar = document.getElementById('admin-sidebar');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    
+    const toggleSidebar = () => {
+        adminSidebar.classList.toggle('open');
+        sidebarOverlay.classList.toggle('active');
+    };
 
-        // Product Modal
-        document.getElementById('add-product-btn').addEventListener('click', () => {
-            this.openProductModal();
-        });
+    adminMenuToggle?.addEventListener('click', toggleSidebar);
+    sidebarOverlay?.addEventListener('click', toggleSidebar);
 
-        document.getElementById('close-modal').addEventListener('click', () => {
-            document.getElementById('product-modal').style.display = 'none';
-        });
+    // --- Navigation & Logout ---
+    const navItems = document.querySelectorAll('.nav-item');
+    const sections = document.querySelectorAll('.content-section');
 
-        document.getElementById('product-form').addEventListener('submit', (e) => {
+    navItems.forEach(item => {
+        item.addEventListener('click', (e) => {
             e.preventDefault();
-            this.saveProduct();
-        });
+            const sectionName = item.getAttribute('data-section');
+            if (!sectionName) return;
+            
+            navItems.forEach(n => n.classList.remove('active'));
+            sections.forEach(s => s.classList.remove('active'));
+            
+            item.classList.add('active');
+            const targetId = `section-${sectionName}`;
+            const targetSection = document.getElementById(targetId);
+            if (targetSection) targetSection.classList.add('active');
 
-        // Image Preview
-        document.getElementById('prod-image-file').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    document.getElementById('prod-image-url').value = event.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
+            if (window.innerWidth <= 992 && adminSidebar.classList.contains('open')) toggleSidebar();
         });
-    },
+    });
 
-    showSection(sectionId) {
-        this.currentSection = sectionId;
+    // --- Dashboard Data Management (Local Storage) ---
+    
+    const getOrders = () => JSON.parse(localStorage.getItem('ridhoponic_orders')) || [];
+    const getProducts = () => JSON.parse(localStorage.getItem('ridhoponic_products')) || [
+        { id: "1", name: "Selada Hijau", category: "harvest", price: 18000, description: "Renyah & Manis", image: "assets/hero_lettuce.png" },
+        { id: "2", name: "Daun Bawang", category: "harvest", price: 12000, description: "Aromatik Segar", image: "assets/product_scallions.png" },
+        { id: "3", name: "Daun Pegagan", category: "harvest", price: 25000, description: "Tanaman Herbal", image: "assets/product_pegagan_popohan.png" },
+        { id: "4", name: "Daun Popohan", category: "harvest", price: 22000, description: "Sayuran Tradisional", image: "assets/product_pegagan_popohan.png" },
+        { id: "5", name: "Benih Sayuran Premium", category: "supplies", price: 15000, description: "Berbagai Varian", image: "assets/product_seeds_equipment.png" },
+        { id: "6", name: "Nutrisi AB Mix", category: "supplies", price: 45000, description: "1 Liter Set", image: "assets/product_seeds_equipment.png" },
+        { id: "7", name: "Netpot Hidroponik", category: "supplies", price: 10000, description: "Set 20 Pcs", image: "assets/product_seeds_equipment.png" }
+    ];
+
+    const initDashboard = () => {
+        updateStats();
+        fetchOrders();
+        fetchProducts();
+        fetchContent();
+    };
+
+    const updateStats = () => {
+        const orders = getOrders();
+        const products = getProducts();
+        document.getElementById('stat-products').textContent = products.length;
+        document.getElementById('stat-orders').textContent = orders.length;
+        const totalRev = orders.reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
+        document.getElementById('stat-revenue').textContent = `IDR ${totalRev.toLocaleString('id-ID')}`;
+    };
+
+    // --- Orders ---
+    const fetchOrders = () => {
+        const orders = getOrders();
+        const tbody = document.getElementById('orders-table-body');
+        if (!tbody) return;
         
-        // Update Nav
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.classList.remove('active');
-            if (item.getAttribute('data-section') === sectionId) {
-                item.classList.add('active');
-            }
-        });
+        // Render Recent Activity (Home tab)
+        const recentActivityTable = document.querySelector('#recent-activity-table tbody');
+        if (recentActivityTable) {
+            recentActivityTable.innerHTML = orders.slice(-5).reverse().map(o => `
+                <tr>
+                    <td>${new Date(o.created_at).toLocaleDateString()}</td>
+                    <td>Pesanan Baru #${o.id}</td>
+                    <td>IDR ${(parseFloat(o.total)||0).toLocaleString('id-ID')}</td>
+                </tr>
+            `).join('') || '<tr><td colspan="3">Belum ada aktivitas.</td></tr>';
+        }
 
-        // Update Title
-        const titles = {
-            dashboard: 'Beranda',
-            orders: 'Kelola Pesanan',
-            products: 'Manajemen Produk',
-            content: 'Edit Konten Situs',
-            settings: 'Pengaturan'
-        };
-        document.getElementById('section-title').textContent = titles[sectionId] || 'Admin';
+        // Render Orders Table
+        tbody.innerHTML = orders.reverse().map(order => {
+            const date = new Date(order.created_at).toLocaleString('id-ID');
+            let itemsHTML = '';
+            try {
+                const items = typeof order.items === 'string' ? JSON.parse(order.items) : order.items;
+                itemsHTML = items.map(i => `${i.name} (${i.quantity}x)`).join(', ');
+            } catch(e) {}
+            return `
+                <tr>
+                    <td>#${order.id}</td>
+                    <td>${date}</td>
+                    <td>${itemsHTML}</td>
+                    <td>IDR ${(parseFloat(order.total)||0).toLocaleString('id-ID')}</td>
+                    <td><button class="btn-secondary" onclick="deleteOrder('${order.id}')" style="color:red; padding:0.5rem;">Hapus</button></td>
+                </tr>
+            `;
+        }).join('');
+    };
 
-        // Update Visibility
-        document.querySelectorAll('.admin-section').forEach(section => {
-            section.classList.remove('active');
-        });
-        document.getElementById(`${sectionId}-section`).classList.add('active');
+    window.deleteOrder = (id) => {
+        if(confirm('Yakin hapus orderan ini?')) {
+            let orders = getOrders();
+            orders = orders.filter(o => o.id != id);
+            localStorage.setItem('ridhoponic_orders', JSON.stringify(orders));
+            initDashboard();
+        }
+    };
 
-        // Close mobile sidebar
-        document.getElementById('sidebar').classList.remove('active');
-        document.getElementById('sidebar-overlay').classList.remove('active');
-    },
-
-    loadData() {
-        // Load from LocalStorage for Demo
-        const localProducts = localStorage.getItem('rp_products');
-        this.products = localProducts ? JSON.parse(localProducts) : [];
-
-        const localOrders = localStorage.getItem('rp_orders');
-        this.orders = localOrders ? JSON.parse(localOrders) : [];
-
-        const localContent = localStorage.getItem('rp_content');
-        this.siteContent = localContent ? JSON.parse(localContent) : {
-            'hero-title': 'Hidroponik Premium, Segar Sampai Meja Anda.',
-            'hero-desc': 'Menanam sayuran padat nutrisi di lingkungan terkontrol tanpa pestisida.',
-            'about-p1': 'RIDHOPONIC FARM hadir sebagai solusi pertanian masa depan...',
-            'contact-address': 'Jalan Raya Tanjungsari Nomor 345, Sumedang'
-        };
-
-        this.renderAll();
-    },
-
-    renderAll() {
-        this.renderStats();
-        this.renderProducts();
-        this.renderOrders();
-        this.renderContentEditor();
-    },
-
-    renderStats() {
-        const totalSales = this.orders.reduce((acc, curr) => acc + curr.total, 0);
-        document.getElementById('stat-total-sales').textContent = `IDR ${totalSales.toLocaleString()}`;
-        document.getElementById('stat-orders-count').textContent = this.orders.length;
-        document.getElementById('stat-products-count').textContent = this.products.length;
-    },
-
-    renderProducts() {
-        const tbody = document.querySelector('#products-table tbody');
-        tbody.innerHTML = this.products.map(p => `
+    // --- Products ---
+    const fetchProducts = () => {
+        const products = getProducts();
+        const tbody = document.getElementById('products-table-body');
+        if (!tbody) return;
+        tbody.innerHTML = products.map(product => `
             <tr>
-                <td><img src="${p.image || 'assets/hero_lettuce.png'}" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;"></td>
-                <td>${p.name}</td>
-                <td>${p.category === 'harvest' ? 'Panen' : 'Alat/Bibit'}</td>
-                <td>${p.price.toLocaleString()}</td>
+                <td><img src="${product.image}" alt="${product.name}" style="width:40px;height:40px;border-radius:5px;object-fit:cover;"></td>
+                <td>${product.name}</td>
+                <td>${product.category === 'harvest' ? 'Hasil Panen' : 'Bibit & Alat'}</td>
+                <td>IDR ${(parseFloat(product.price)||0).toLocaleString('id-ID')}</td>
                 <td>
-                    <button onclick="admin.openProductModal(${p.id})" class="btn" style="padding: 4px 8px; font-size: 0.7rem; background: #e9ecef;">Edit</button>
-                    <button onclick="admin.deleteProduct(${p.id})" class="btn" style="padding: 4px 8px; font-size: 0.7rem; background: #ffe3e3; color: #c00;">Hapus</button>
+                    <button class="btn-secondary" onclick="editProduct('${product.id}')" style="padding:0.5rem; margin-right:0.5rem;">Edit</button>
+                    <button class="btn-secondary" onclick="deleteProduct('${product.id}')" style="color:red; padding:0.5rem;">Hapus</button>
                 </td>
             </tr>
         `).join('');
-    },
+    };
 
-    renderOrders() {
-        const limit = 5;
-        const recentOrders = this.orders.slice(0, limit);
-        
-        document.querySelector('#recent-orders-table tbody').innerHTML = recentOrders.map(o => `
-            <tr>
-                <td>#${o.id.toString().slice(-4)}</td>
-                <td>${o.customer_name}</td>
-                <td>IDR ${o.total.toLocaleString()}</td>
-                <td><span style="background: #e7f5ff; color: #228be6; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem;">Selesai</span></td>
-            </tr>
-        `).join('');
+    // Product Modal Handling
+    const productModal = document.getElementById('product-modal');
+    const productForm = document.getElementById('product-form');
+    
+    document.getElementById('add-product-btn')?.addEventListener('click', () => {
+        productForm.reset();
+        document.getElementById('prod-id').value = '';
+        productModal.style.display = 'flex';
+    });
 
-        document.querySelector('#full-orders-table tbody').innerHTML = this.orders.map(o => `
-            <tr>
-                <td>${new Date(o.date).toLocaleDateString()}</td>
-                <td>${o.customer_name}</td>
-                <td>${o.items.length} Produk</td>
-                <td>IDR ${o.total.toLocaleString()}</td>
-                <td>
-                    <button class="btn btn-outline" style="padding: 4px 8px; font-size: 0.7rem;">Detail</button>
-                </td>
-            </tr>
-        `).join('');
-    },
+    document.querySelector('.close-modal')?.addEventListener('click', () => {
+        productModal.style.display = 'none';
+    });
 
-    renderContentEditor() {
-        const container = document.getElementById('content-management-container');
-        container.innerHTML = Object.keys(this.siteContent).map(key => `
-            <div class="content-card">
-                <label style="font-weight: bold; display: block; margin-bottom: 0.5rem; text-transform: capitalize;">${key.replace('-', ' ')}</label>
-                <textarea id="edit-content-${key}" style="width: 100%; min-height: 80px; padding: 0.5rem; border: 1px solid #ddd; border-radius: 8px;">${this.siteContent[key]}</textarea>
-                <button onclick="admin.saveContentItem('${key}')" class="btn btn-primary" style="margin-top: 1rem; width: 100%; font-size: 0.8rem;">Update</button>
-            </div>
-        `).join('');
-    },
-
-    openProductModal(id = null) {
-        const modal = document.getElementById('product-modal');
-        const form = document.getElementById('product-form');
-        document.getElementById('modal-title').textContent = id ? 'Edit Produk' : 'Tambah Produk';
-        
-        if (id) {
-            const p = this.products.find(prod => prod.id === id);
-            document.getElementById('edit-id').value = p.id;
-            document.getElementById('prod-name').value = p.name;
-            document.getElementById('prod-category').value = p.category;
-            document.getElementById('prod-price').value = p.price;
-            document.getElementById('prod-desc').value = p.desc || '';
-            document.getElementById('prod-image-url').value = p.image || '';
-        } else {
-            form.reset();
-            document.getElementById('edit-id').value = '';
-            document.getElementById('prod-image-url').value = '';
+    window.editProduct = (id) => {
+        const products = getProducts();
+        const product = products.find(p => p.id == id);
+        if (product) {
+            document.getElementById('edit-product-id').value = product.id;
+            document.getElementById('p-name').value = product.name;
+            document.getElementById('p-category').value = product.category;
+            document.getElementById('p-price').value = product.price;
+            document.getElementById('p-desc').value = product.description;
+            document.getElementById('p-image').value = product.image;
+            productModal.style.display = 'flex';
         }
-        
-        modal.style.display = 'flex';
-    },
+    };
 
-    saveProduct() {
-        const id = document.getElementById('edit-id').value;
-        const product = {
-            id: id ? parseInt(id) : Date.now(),
-            name: document.getElementById('prod-name').value,
-            category: document.getElementById('prod-category').value,
-            price: parseInt(document.getElementById('prod-price').value),
-            desc: document.getElementById('prod-desc').value,
-            image: document.getElementById('prod-image-url').value
+    window.deleteProduct = (id) => {
+        if(confirm('Hapus produk ini?')) {
+            let products = getProducts();
+            products = products.filter(p => p.id != id);
+            localStorage.setItem('ridhoponic_products', JSON.stringify(products));
+            initDashboard();
+        }
+    };
+
+    productForm?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const fileInput = document.getElementById('upload-p-img');
+        
+        const saveProduct = (imgData) => {
+            let products = getProducts();
+            const prodId = document.getElementById('edit-product-id').value;
+            const newProduct = {
+                id: prodId || Date.now().toString(),
+                name: document.getElementById('p-name').value,
+                category: document.getElementById('p-category').value,
+                price: document.getElementById('p-price').value,
+                description: document.getElementById('p-desc').value,
+                image: imgData
+            };
+
+            if (prodId) {
+                const idx = products.findIndex(p => p.id == prodId);
+                if(idx > -1) {
+                    if(!imgData) newProduct.image = products[idx].image; // keep old image if not uploaded
+                    products[idx] = newProduct;
+                }
+            } else {
+                if(!newProduct.image) newProduct.image = document.getElementById('p-image').value || 'assets/hero_lettuce.png'; // use text input or default
+                products.push(newProduct);
+            }
+
+            localStorage.setItem('ridhoponic_products', JSON.stringify(products));
+            productModal.style.display = 'none';
+            initDashboard();
         };
 
-        if (id) {
-            const index = this.products.findIndex(p => p.id === parseInt(id));
-            this.products[index] = product;
+        if (fileInput.files.length > 0) {
+            const reader = new FileReader();
+            reader.onload = (e) => saveProduct(e.target.result);
+            reader.readAsDataURL(fileInput.files[0]);
         } else {
-            this.products.unshift(product);
+            saveProduct(null);
         }
+    });
 
-        localStorage.setItem('rp_products', JSON.stringify(this.products));
-        document.getElementById('product-modal').style.display = 'none';
-        this.renderProducts();
-        this.renderStats();
-    },
+    // --- Content Management ---
+    const defaultContent = {
+        'hero-subtitle': 'Pertanian Berkelanjutan',
+        'hero-title': 'Hidroponik Premium, <br>Segar Sampai Meja Anda.',
+        'hero-desc': 'Menanam sayuran padat nutrisi di lingkungan terkontrol tanpa pestisida. Pengiriman segar langsung dari kebun kami di Sumedang.',
+        'hero-img': 'assets/hero_lettuce.png',
+        'about-title': 'Tentang Kami',
+        'about-p1': '<strong>RIDHOPONIC FARM</strong> hadir sebagai solusi pertanian masa depan yang memadukan teknologi hidroponik modern dengan komitmen terhadap keamanan pangan. Berbasis di Kecamatan Tanjungsari, Kabupaten Sumedang, Jawa Barat, kami berfokus pada produksi sayuran segar berkualitas tinggi yang dikembangkan di lingkungan terkontrol.',
+        'about-p2': 'Kepercayaan konsumen adalah prioritas utama kami. Oleh karena itu, seluruh operasional dan produk RIDHOPONIC FARM telah resmi terdaftar dalam sistem <strong style="white-space: nowrap;">NIB: 1712240062057</strong> dan menjamin aspek kehalalan melalui <strong>Sertifikasi HALAL Indonesia</strong>. Dengan standar manajemen nutrisi yang ketat dan sistem panen harian, kami memastikan setiap helai sayuran yang sampai ke meja Anda adalah produk yang legal, aman, and penuh nutrisi.',
+        'about-img': 'assets/hero_lettuce.png',
+        'contact-address': 'Jalan Raya Tanjungsari Nomor 345, RT/RW 003/004, Dusun Langensari, Desa Gudang, Kec. Tanjungsari, Kab. Sumedang, Jawa Barat, 45362',
+        'contact-wa': '085176960803 | 085220933263',
+        'contact-hours': 'Senin – Jumat: 08:00 - 17:00 WIB'
+    };
 
-    deleteProduct(id) {
-        if (confirm('Hapus produk ini?')) {
-            this.products = this.products.filter(p => p.id !== id);
-            localStorage.setItem('rp_products', JSON.stringify(this.products));
-            this.renderProducts();
-            this.renderStats();
+    const fetchContent = () => {
+        const content = JSON.parse(localStorage.getItem('ridhoponic_content')) || defaultContent;
+        // Map to inputs
+        ['hero-subtitle', 'hero-title', 'hero-desc', 'about-title', 'about-p1', 'about-p2', 'contact-address', 'contact-wa', 'contact-hours'].forEach(id => {
+            const input = document.getElementById(`edit-${id}`);
+            if (input) input.value = content[id] || '';
+        });
+        
+        // Previews
+        if (content['hero-img']) document.getElementById('preview-hero-img').src = content['hero-img'];
+        if (content['about-img']) document.getElementById('preview-about-img').src = content['about-img'];
+    };
+
+    document.getElementById('save-content-btn')?.addEventListener('click', async () => {
+        const content = JSON.parse(localStorage.getItem('ridhoponic_content')) || defaultContent;
+        const btn = document.getElementById('save-content-btn');
+        btn.textContent = 'Menyimpan...';
+
+        // Get text inputs
+        ['hero-subtitle', 'hero-title', 'hero-desc', 'about-title', 'about-p1', 'about-p2', 'contact-address', 'contact-wa', 'contact-hours'].forEach(id => {
+            const el = document.getElementById(`edit-${id}`);
+            if(el) content[id] = el.value;
+        });
+
+        // Get file inputs via FileReader promise
+        const getBase64 = (file) => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+
+        const heroImg = document.getElementById('upload-hero-img').files[0];
+        if (heroImg) content['hero-img'] = await getBase64(heroImg);
+
+        const aboutImg = document.getElementById('upload-about-img').files[0];
+        if (aboutImg) content['about-img'] = await getBase64(aboutImg);
+
+        localStorage.setItem('ridhoponic_content', JSON.stringify(content));
+        alert('Konten berhasil disimpan di Local Storage!');
+        btn.textContent = 'Simpan Semua Konten';
+    });
+
+    // --- Settings ---
+    document.getElementById('save-password-btn')?.addEventListener('click', () => {
+        const newPass = document.getElementById('new-password').value;
+        if(newPass.trim() !== '') {
+            localStorage.setItem('ridhoponic_settings', JSON.stringify({ password: newPass }));
+            alert('Password berhasil diperbarui!');
+            document.getElementById('new-password').value = '';
+        } else {
+            alert('Password tidak boleh kosong');
         }
-    },
+    });
 
-    saveContentItem(key) {
-        const val = document.getElementById(`edit-content-${key}`).value;
-        this.siteContent[key] = val;
-        localStorage.setItem('rp_content', JSON.stringify(this.siteContent));
-        alert('Konten diperbarui!');
-    }
-};
-
-// Start
-document.addEventListener('DOMContentLoaded', () => admin.init());
+});
