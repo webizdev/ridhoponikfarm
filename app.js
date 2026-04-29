@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'hero-img': 'assets/hero_lettuce.png',
         'about-title': 'Tentang Kami',
         'about-p1': '<strong>RIDHOPONIC FARM</strong> hadir sebagai solusi pertanian masa depan yang memadukan teknologi hidroponik modern dengan komitmen terhadap keamanan pangan. Berbasis di Kecamatan Tanjungsari, Kabupaten Sumedang, Jawa Barat, kami berfokus pada produksi sayuran segar berkualitas tinggi yang dikembangkan di lingkungan terkontrol.',
-        'about-p2': 'Kepercayaan konsumen adalah prioritas utama kami. Oleh karena itu, seluruh operasional dan produk RIDHOPONIC FARM telah resmi terdaftar dalam sistem <strong style="white-space: nowrap;">NIB: 1712240062057</strong> dan menjamin aspek kehalalan melalui <strong>Sertifikasi HALAL Indonesia</strong>. Dengan standar manajemen nutrisi yang ketat dan sistem panen harian, kami memastikan setiap helai sayuran yang sampai ke meja Anda adalah produk yang legal, aman, dan penuh nutrisi.',
+        'about-p2': 'Kepercayaan konsumen adalah prioritas utama kami. Oleh karena itu, seluruh operasional dan produk RIDHOPONIC FARM telah resmi terdaftar dalam sistem <strong style="white-space: nowrap;">NIB: 1712240062057</strong> dan menjamin aspek kehalalan melalui <strong>Sertifikasi HALAL Indonesia</strong>. Dengan standar manajemen nutrisi yang ketat dan sistem panen harian, kami memastikan setiap helai sayuran yang sampai ke meja Anda adalah produk yang legal, aman, and penuh nutrisi.',
         'about-img': 'assets/hero_lettuce.png',
         'contact-address': 'Jalan Raya Tanjungsari Nomor 345, RT/RW 003/004, Dusun Langensari, Desa Gudang, Kec. Tanjungsari, Kab. Sumedang, Jawa Barat, 45362',
         'contact-wa': '085176960803 | 085220933263',
@@ -148,11 +148,14 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: "4", name: "Daun Popohan", category: "harvest", price: 22000, description: "Sayuran Tradisional", image: "assets/product_pegagan_popohan.png" },
         { id: "5", name: "Benih Sayuran Premium", category: "supplies", price: 15000, description: "Berbagai Varian", image: "assets/product_seeds_equipment.png" },
         { id: "6", name: "Nutrisi AB Mix", category: "supplies", price: 45000, description: "1 Liter Set", image: "assets/product_seeds_equipment.png" },
-        { id: "7", name: "Netpot Hidroponik", category: "supplies", price: 10000, description: "Set 20 Pcs", image: "assets/product_seeds_equipment.png" }
+        { id: "7", name: "Netpot Hidroponik", category: "supplies", price: 10000, description: "Set 20 Pcs", image: "assets/product_seeds_equipment.png" },
+        { id: "8", name: "Rockwool Hidroponik", category: "supplies", price: 18000, description: "Set 18 Pcs", image: "assets/product_seeds_equipment.png" }
     ];
 
     let products = [];
+    let visibleCount = 6;
     const catalogGrid = document.querySelector('.catalog-grid');
+    const loadMoreBtn = document.getElementById('load-more-btn');
 
     const fetchProducts = () => {
         products = JSON.parse(localStorage.getItem('ridhoponic_products')) || defaultProducts;
@@ -161,24 +164,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const renderProducts = () => {
         if (!catalogGrid) return;
-        catalogGrid.innerHTML = products.map(product => `
-            <article class="product-card reveal active" data-category="${product.category}">
-                <div class="product-image">
-                    <img src="${product.image}" alt="${product.name}">
-                </div>
-                <div class="product-info">
-                    <div>
-                        <h3>${product.name}</h3>
-                        <p>${product.description || ''}</p>
+        const currentFilter = document.querySelector('.filter-btn.active')?.dataset.filter || 'all';
+        
+        catalogGrid.innerHTML = products.map((product, index) => {
+            const isVisible = (currentFilter === 'all' || product.category === currentFilter);
+            // On 'all' filter, we apply the Load More limit. On specific categories, we show all filtered items.
+            const shouldHide = currentFilter === 'all' && index >= visibleCount;
+            
+            return `
+                <article class="product-card reveal active ${isVisible ? '' : 'hidden-product'} ${shouldHide ? 'hidden-product' : ''}" data-category="${product.category}">
+                    <div class="product-image">
+                        <img src="${product.image}" alt="${product.name}">
                     </div>
-                    <span class="product-price">${(product.price / 1000).toFixed(0)}rb</span>
-                </div>
-                <button class="add-to-cart-btn" 
-                    data-id="${product.id}" 
-                    data-name="${product.name}" 
-                    data-price="${product.price}">Tambah ke Keranjang</button>
-            </article>
-        `).join('');
+                    <div class="product-info">
+                        <div>
+                            <h3>${product.name}</h3>
+                            <p>${product.description || ''}</p>
+                        </div>
+                        <span class="product-price">${(product.price / 1000).toFixed(0)}rb</span>
+                    </div>
+                    <button class="add-to-cart-btn" 
+                        data-id="${product.id}" 
+                        data-name="${product.name}" 
+                        data-price="${product.price}">Tambah ke Keranjang</button>
+                </article>
+            `;
+        }).join('');
+
+        // Handle Load More Button Visibility
+        if (loadMoreBtn) {
+            if (currentFilter === 'all' && visibleCount < products.length) {
+                loadMoreBtn.parentElement.style.display = 'block';
+            } else {
+                loadMoreBtn.parentElement.style.display = 'none';
+            }
+        }
 
         document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -193,6 +213,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     };
+
+    loadMoreBtn?.addEventListener('click', () => {
+        visibleCount = products.length; // Show all
+        renderProducts();
+        // Trigger reveal for new items
+        setTimeout(revealOnScroll, 100);
+    });
 
     // Checkout via WhatsApp & Save Order Locally
     checkoutBtn?.addEventListener('click', () => {
@@ -232,10 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            const filter = btn.getAttribute('data-filter');
-            document.querySelectorAll('.product-card').forEach(card => {
-                card.style.display = (filter === 'all' || card.dataset.category === filter) ? 'block' : 'none';
-            });
+            renderProducts();
         });
     });
 });
