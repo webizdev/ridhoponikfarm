@@ -363,6 +363,87 @@ nav a:hover {
     border-color: var(--primary);
 }
 
+/* Process Section */
+.process-section {
+    padding: var(--section-gap) 0;
+    background-color: var(--surface-container-low);
+}
+
+.process-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    text-align: center;
+}
+
+.process-item .material-symbols-outlined {
+    font-size: 3rem;
+    color: var(--primary);
+}
+
+.process-item h4 {
+    margin-top: 1rem;
+    font-size: 1.1rem;
+    color: var(--primary);
+}
+
+.process-item p {
+    font-size: 0.875rem;
+    color: var(--text-on-surface-variant);
+    margin-top: 0.5rem;
+}
+
+/* About Us Section */
+.about-section {
+    padding: var(--section-gap) 0;
+    background-color: var(--surface-container-lowest);
+}
+
+.about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+}
+
+.about-section h2 {
+    font-size: 2.5rem;
+    color: var(--primary);
+    margin-bottom: 1.5rem;
+}
+
+.about-section p {
+    margin-bottom: 1.5rem;
+    color: var(--text-on-surface-variant);
+    text-align: justify;
+}
+
+.about-image-container {
+    position: relative;
+}
+
+.about-image-container img {
+    width: 100%;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 968px) {
+    .about-grid {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+    }
+
+    .about-section h2 {
+        font-size: 2rem;
+        text-align: center;
+    }
+
+    .about-image-container {
+        order: -1; /* Image first on mobile */
+    }
+}
+
 /* Contact Section */
 .contact {
     padding: var(--section-gap) 0;
