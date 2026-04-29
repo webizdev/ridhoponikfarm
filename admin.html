@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | RIDHOPONICFARM</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Serif:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
+    
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+    <!-- Login Overlay -->
+    <div id="login-overlay">
+        <div class="login-card">
+            <h2>Admin Login</h2>
+            <p style="margin-bottom: 2rem; color: var(--secondary);">Silakan masukkan password untuk masuk ke dasbor.</p>
+            <input type="password" id="admin-password" placeholder="Password" style="margin-bottom: 1rem;">
+            <button id="login-btn" class="btn-primary" style="width: 100%;">Masuk</button>
+            <p id="login-error" style="color: #d32f2f; margin-top: 1rem; display: none;">Password salah!</p>
+        </div>
+    </div>
+
+    <!-- Dashboard Container -->
+    <div class="dashboard-container" id="dashboard">
+        <div id="sidebar-overlay" class="sidebar-overlay"></div>
+        <!-- Mobile Header -->
+        <header class="mobile-header">
+            <span class="logo-small">RIDHOPONIC ADMIN</span>
+            <button id="admin-menu-toggle" class="menu-toggle">
+                <span class="material-symbols-outlined">menu</span>
+            </button>
+        </header>
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="admin-sidebar">
+            <h1>RIDHOPONIC <br>DASHBOARD</h1>
+            <nav class="nav-links">
+                <ul>
+                    <li><a href="#" class="nav-item active" data-section="home">
+                        <span class="material-symbols-outlined">dashboard</span> Beranda
+                    </a></li>
+                    <li><a href="#" class="nav-item" data-section="orders">
+                        <span class="material-symbols-outlined">shopping_cart</span> Orderan
+                    </a></li>
+                    <li><a href="#" class="nav-item" data-section="products">
+                        <span class="material-symbols-outlined">inventory_2</span> Produk
+                    </a></li>
+                    <li><a href="#" class="nav-item" data-section="content">
+                        <span class="material-symbols-outlined">edit_note</span> Konten
+                    </a></li>
+                    <li><a href="#" class="nav-item" data-section="settings">
+                        <span class="material-symbols-outlined">settings</span> Pengaturan
+                    </a></li>
+                </ul>
+            </nav>
+            <a href="index.html" class="logout-btn">
+                <span class="material-symbols-outlined">logout</span> Kembali ke Site
+            </a>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            
+            <!-- Section: Home -->
+            <section id="section-home" class="content-section active">
+                <div class="header-row">
+                    <h2>Beranda Ringkasan</h2>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Produk</h3>
+                        <p id="stat-products">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Orderan</h3>
+                        <p id="stat-orders">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Pendapatan</h3>
+                        <p id="stat-revenue">IDR 0</p>
+                    </div>
+                </div>
+
+                <div class="data-card">
+                    <h3 style="margin-bottom: 1.5rem;">Aktivitas Terakhir</h3>
+                    <table id="recent-activity-table">
+                        <thead>
+                            <tr>
+                                <th>Waktu</th>
+                                <th>Aktivitas</th>
+                                <th>Detail</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Activities injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Section: Orders -->
+            <section id="section-orders" class="content-section">
+                <div class="header-row">
+                    <h2>Manajemen Orderan</h2>
+                </div>
+                <div class="data-card">
+                    <table id="orders-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Tanggal</th>
+                                <th>Item</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Orders injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Section: Products -->
+            <section id="section-products" class="content-section">
+                <div class="header-row">
+                    <h2>Katalog Produk</h2>
+                    <button class="btn-primary" id="add-product-btn">+ Tambah Produk</button>
+                </div>
+                <div class="data-card">
+                    <table id="products-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Foto</th>
+                                <th>Nama Produk</th>
+                                <th>Kategori</th>
+                                <th>Harga</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="products-table-body">
+                            <!-- Products injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Section: Content -->
+            <section id="section-content" class="content-section">
+                <div class="header-row">
+                    <h2>Kelola Konten Halaman Utama</h2>
+                    <button class="btn-primary" id="save-content-btn">Simpan Semua Konten</button>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem;">
+                    <!-- Hero Content -->
+                    <div class="data-card">
+                        <h3 style="margin-bottom: 1.5rem;">Bagian Hero (Atas)</h3>
+                        <div class="form-group">
+                            <label>Subtitle Hero</label>
+                            <input type="text" id="edit-hero-subtitle">
+                        </div>
+                        <div class="form-group">
+                            <label>Judul Hero (HTML allowed)</label>
+                            <input type="text" id="edit-hero-title">
+                        </div>
+                        <div class="form-group">
+                            <label>Deskripsi Hero</label>
+                            <textarea id="edit-hero-desc" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Gambar Hero</label>
+                            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                <input type="text" id="edit-hero-img" placeholder="assets/..." style="flex: 1;">
+                                <label for="upload-hero-img" class="btn-secondary" style="margin: 0; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                    <span class="material-symbols-outlined" style="font-size: 1.2rem;">upload</span>
+                                </label>
+                                <input type="file" id="upload-hero-img" accept="image/*" style="display: none;">
+                            </div>
+                            <img id="preview-hero-img" style="width: 100%; border-radius: 12px; height: 120px; object-fit: cover; border: 1px solid var(--surface-container);">
+                        </div>
+                    </div>
+
+                    <!-- About Content -->
+                    <div class="data-card">
+                        <h3 style="margin-bottom: 1.5rem;">Bagian Tentang Kami</h3>
+                        <div class="form-group">
+                            <label>Judul Tentang Kami</label>
+                            <input type="text" id="edit-about-title">
+                        </div>
+                        <div class="form-group">
+                            <label>Paragraf 1 (HTML allowed)</label>
+                            <textarea id="edit-about-p1" rows="4"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Paragraf 2 (HTML allowed)</label>
+                            <textarea id="edit-about-p2" rows="4"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Gambar Tentang</label>
+                            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                <input type="text" id="edit-about-img" placeholder="assets/..." style="flex: 1;">
+                                <label for="upload-about-img" class="btn-secondary" style="margin: 0; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                    <span class="material-symbols-outlined" style="font-size: 1.2rem;">upload</span>
+                                </label>
+                                <input type="file" id="upload-about-img" accept="image/*" style="display: none;">
+                            </div>
+                            <img id="preview-about-img" style="width: 100%; border-radius: 12px; height: 120px; object-fit: cover; border: 1px solid var(--surface-container);">
+                        </div>
+                    </div>
+
+                    <!-- Contact Content -->
+                    <div class="data-card">
+                        <h3 style="margin-bottom: 1.5rem;">Informasi Kontak</h3>
+                        <div class="form-group">
+                            <label>Alamat Lengkap</label>
+                            <textarea id="edit-contact-address" rows="2"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Nomor WhatsApp (Pisahkan dengan |)</label>
+                            <input type="text" id="edit-contact-wa">
+                        </div>
+                        <div class="form-group">
+                            <label>Jam Operasional</label>
+                            <input type="text" id="edit-contact-hours">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Settings -->
+            <section id="section-settings" class="content-section">
+                <div class="header-row">
+                    <h2>Pengaturan</h2>
+                </div>
+                <div class="data-card" style="max-width: 500px;">
+                    <h3 style="margin-bottom: 1.5rem;">Ganti Password Admin</h3>
+                    <div class="form-group">
+                        <label>Password Baru</label>
+                        <input type="password" id="new-password" placeholder="Password baru">
+                    </div>
+                    <button class="btn-primary" id="save-password-btn">Simpan Perubahan</button>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Product Modal -->
+    <div class="modal" id="product-modal">
+        <div class="modal-content">
+            <h3 id="modal-title">Tambah Produk</h3>
+            <form id="product-form">
+                <input type="hidden" id="edit-product-id">
+                <div class="form-group">
+                    <label>Nama Produk</label>
+                    <input type="text" id="p-name" required>
+                </div>
+                <div class="form-group">
+                    <label>Kategori</label>
+                    <select id="p-category">
+                        <option value="harvest">Hasil Panen</option>
+                        <option value="supplies">Bibit & Peralatan</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Harga (IDR)</label>
+                    <input type="number" id="p-price" required>
+                </div>
+                <div class="form-group">
+                    <label>Deskripsi Singkat</label>
+                    <input type="text" id="p-desc">
+                </div>
+                <div class="form-group">
+                    <label>Gambar Produk</label>
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <input type="text" id="p-image" placeholder="assets/..." style="flex: 1;">
+                        <label for="upload-p-img" class="btn-secondary" style="margin: 0; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                            <span class="material-symbols-outlined" style="font-size: 1.2rem;">upload</span>
+                        </label>
+                        <input type="file" id="upload-p-img" accept="image/*" style="display: none;">
+                    </div>
+                    <img id="preview-p-image" style="width: 100%; border-radius: 12px; height: 120px; object-fit: cover; border: 1px solid var(--surface-container); display: none;">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" id="close-modal-btn">Batal</button>
+                    <button type="submit" class="btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>
