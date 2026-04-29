@@ -453,32 +453,42 @@ nav a:hover {
     display: grid;
     grid-template-columns: 1fr 1.2fr;
     gap: 5rem;
+    align-items: center; /* Vertically center the text and map */
 }
 
 .contact-info h2 {
     font-size: 2.8rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     color: var(--primary);
 }
 
 .info-item {
     display: flex;
     gap: 1.25rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
+    align-items: flex-start; /* Align icon to top of text */
 }
 
 .info-item .material-symbols-outlined {
     color: var(--primary);
-    font-size: 1.8rem;
+    font-size: 1.6rem;
+    margin-top: 0.2rem; /* Minor adjustment to align icon with first line */
 }
 
 .info-item h4 {
     font-size: 1.1rem;
     margin-bottom: 0.25rem;
+    color: var(--primary);
+}
+
+.info-item p {
+    font-size: 0.95rem;
+    color: var(--text-on-surface-variant);
+    line-height: 1.5;
 }
 
 .map-container {
-    height: 500px;
+    height: 480px; /* Adjusted height for better balance */
     border-radius: 24px;
     overflow: hidden;
     box-shadow: 0 20px 50px rgba(0,0,0,0.08);
