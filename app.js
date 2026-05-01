@@ -114,6 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
         link.addEventListener('click', () => mainNav.classList.remove('active'));
     });
 
+    // --- Content Management (Local Storage) ---
     const fetchContent = async () => {
         try {
             const response = await fetch('api.php?action=get_content');
@@ -138,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let products = [];
     let visibleCount = 6;
-    const catalogGrid = document.getElementById('catalog-grid-container');
+    const catalogGrid = document.getElementById('product-list');
     const loadMoreBtn = document.getElementById('load-more-btn');
 
     const fetchProducts = async () => {
@@ -148,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (dbProducts.error) {
                 console.error('DB Products Error:', dbProducts.error);
-                catalogGrid.innerHTML = '<p class="error-msg" style="grid-column: 1/-1; text-align: center;">Gagal memuat produk. Hubungi admin.</p>';
+                catalogGrid.innerHTML = '<p class="error-msg">Gagal memuat produk. Hubungi admin.</p>';
                 return;
             }
 
@@ -156,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderProducts();
         } catch (error) {
             console.error('Error fetching products:', error);
-            catalogGrid.innerHTML = '<p class="error-msg" style="grid-column: 1/-1; text-align: center;">Koneksi gagal. Silakan muat ulang halaman.</p>';
+            catalogGrid.innerHTML = '<p class="error-msg">Koneksi gagal. Silakan muat ulang halaman.</p>';
         }
     };
 
@@ -247,28 +248,51 @@ document.addEventListener('DOMContentLoaded', () => {
             let msg = 'Halo Ridhoponic Farm, saya memesan:\n\n';
             cart.forEach((i, idx) => msg += `${idx+1}. ${i.name} (${i.quantity}x)\n`);
             msg += `\nTotal: IDR ${total.toLocaleString('id-ID')}`;
-            window.open(`https://wa.me/6285176960803?text=${encodeURIComponent(msg)}`, '_blank');
+            msg += '\n\nApakah stok masih tersedia?';
             
+            const waUrl = `https://wa.me/6285176960803?text=${encodeURIComponent(msg)}`;
+            
+            // Clear cart & redirect
             cart = [];
             saveAndRenderCart();
             toggleCart();
+            window.open(waUrl, '_blank');
         } catch (error) {
-            console.error('Checkout error:', error);
-            alert('Terjadi kesalahan saat memproses pesanan. Silakan coba lagi.');
+            console.error('Error saving order:', error);
+            alert('Terjadi kesalahan saat memproses pesanan. Silakan coba lagi atau hubungi via WhatsApp langsung.');
         }
     });
 
-    // Initial load
-    fetchContent();
-    fetchProducts();
-    renderCart();
-
-    // Filter Logic
+    // Category Filtering
     document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', (e) => {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+            e.target.classList.add('active');
+            
+            // Reset visible count on filter change
+            visibleCount = 6;
+            
             renderProducts();
+            setTimeout(revealOnScroll, 100);
         });
     });
+
+    // Header Shrink on Scroll
+    const header = document.querySelector('header');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 100) {
+            header.style.height = '60px';
+            header.style.boxShadow = '0 4px 20px rgba(0,0,0,0.08)';
+        } else {
+            header.style.height = '80px';
+            header.style.boxShadow = 'none';
+        }
+    });
+
+    // Fetch initial data
+    fetchContent();
+    fetchProducts();
+    
+    // Initial Render Cart
+    renderCart();
 });
