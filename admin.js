@@ -97,40 +97,57 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Dashboard Data Management (Local Storage) ---
     
     const initDashboard = async () => {
-        await updateStats();
-        await fetchOrders();
-        await fetchProducts();
+        cachedOrders = await getOrders();
+        cachedProducts = await getProducts();
+        updateStats();
+        renderOrders();
+        renderProducts();
         await fetchContent();
     };
 
     const getOrders = async () => {
         try {
-            const res = await fetch('api.php?action=get_orders');
-            return await res.json();
-        } catch(e) { console.error(e); return []; }
-    };
-    
-    const getProducts = async () => {
-        try {
-            const res = await fetch('api.php?action=get_products');
-            return await res.json();
-        } catch(e) { console.error(e); return []; }
+            const response = await fetch('api.php?action=get_orders');
+            const data = await response.json();
+            if (data.error) {
+                console.error('DB Error:', data.error);
+                return [];
+            }
+            return Array.isArray(data) ? data : [];
+        } catch (e) {
+            console.error('Error fetching orders:', e);
+            return [];
+        }
     };
 
-    const updateStats = async () => {
-        const products = await getProducts();
-        const orders = await getOrders();
-        
-        document.getElementById('stat-products').textContent = products.length;
-        document.getElementById('stat-orders').textContent = orders.length;
-        
-        const totalRevenue = orders.reduce((sum, order) => sum + parseFloat(order.total), 0);
-        document.getElementById('stat-revenue').textContent = `IDR ${totalRevenue.toLocaleString('id-ID')}`;
+    const getProducts = async () => {
+        try {
+            const response = await fetch('api.php?action=get_products');
+            const data = await response.json();
+            if (data.error) {
+                console.error('DB Error:', data.error);
+                return [];
+            }
+            return Array.isArray(data) ? data : [];
+        } catch (e) {
+            console.error('Error fetching products:', e);
+            return [];
+        }
+    };
+
+    let cachedOrders = [];
+    let cachedProducts = [];
+
+    const updateStats = () => {
+        document.getElementById('stat-products').textContent = cachedProducts.length;
+        document.getElementById('stat-orders').textContent = cachedOrders.length;
+        const totalRev = cachedOrders.reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
+        document.getElementById('stat-revenue').textContent = `IDR ${totalRev.toLocaleString('id-ID')}`;
     };
 
     // --- Orders ---
-    const fetchOrders = async () => {
-        const orders = await getOrders();
+    const renderOrders = () => {
+        const orders = cachedOrders;
         const tbody = document.getElementById('orders-table-body');
         if (!tbody) return;
         
@@ -183,8 +200,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- Products ---
-    const fetchProducts = async () => {
-        const products = await getProducts();
+    const renderProducts = () => {
+        const products = cachedProducts;
         const tbody = document.getElementById('products-table-body');
         if (!tbody) return;
 
@@ -213,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.getElementById('add-product-btn')?.addEventListener('click', () => {
         productForm.reset();
-        document.getElementById('prod-id').value = '';
+        document.getElementById('edit-product-id').value = '';
         productModal.style.display = 'flex';
     });
 
@@ -221,9 +238,8 @@ document.addEventListener('DOMContentLoaded', () => {
         productModal.style.display = 'none';
     });
 
-    window.editProduct = async (id) => {
-        const products = await getProducts();
-        const product = products.find(p => p.id == id);
+    window.editProduct = (id) => {
+        const product = cachedProducts.find(p => p.id == id);
         if (product) {
             document.getElementById('edit-product-id').value = product.id;
             document.getElementById('p-name').value = product.name;
