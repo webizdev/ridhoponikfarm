@@ -581,6 +581,23 @@ nav a:hover {
         margin: 0 auto;
     }
 
+    .logo {
+        font-size: 1.8rem; /* Enlarged from 1.6rem */
+    }
+
+    .cart-icon-btn .material-symbols-outlined,
+    .menu-toggle .material-symbols-outlined {
+        font-size: 2rem !important; /* Enlarged for better touch target */
+    }
+
+    .cart-badge {
+        width: 20px;
+        height: 20px;
+        font-size: 0.75rem;
+        top: -8px;
+        right: -8px;
+    }
+
     .about-grid {
         grid-template-columns: 1fr;
         gap: 3rem;
@@ -624,7 +641,7 @@ nav a:hover {
     }
 
     .logo {
-        font-size: 1.3rem;
+        font-size: 1.5rem; /* Enlarged from 1.3rem */
     }
 }
 
