@@ -105,41 +105,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const getOrders = async () => {
         try {
-            const response = await fetch('api.php?action=get_orders');
-            const data = await response.json();
-            if (data.error) {
-                console.error('DB Error:', data.error);
-                return [];
-            }
-            return Array.isArray(data) ? data : [];
-        } catch (e) {
-            console.error('Error fetching orders:', e);
-            return [];
-        }
+            const res = await fetch('api.php?action=get_orders');
+            return await res.json();
+        } catch(e) { console.error(e); return []; }
     };
-
+    
     const getProducts = async () => {
         try {
-            const response = await fetch('api.php?action=get_products');
-            const data = await response.json();
-            if (data.error) {
-                console.error('DB Error:', data.error);
-                return [];
-            }
-            return Array.isArray(data) ? data : [];
-        } catch (e) {
-            console.error('Error fetching products:', e);
-            return [];
-        }
+            const res = await fetch('api.php?action=get_products');
+            return await res.json();
+        } catch(e) { console.error(e); return []; }
     };
 
     const updateStats = async () => {
-        const orders = await getOrders();
         const products = await getProducts();
+        const orders = await getOrders();
+        
         document.getElementById('stat-products').textContent = products.length;
         document.getElementById('stat-orders').textContent = orders.length;
-        const totalRev = orders.reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
-        document.getElementById('stat-revenue').textContent = `IDR ${totalRev.toLocaleString('id-ID')}`;
+        
+        const totalRevenue = orders.reduce((sum, order) => sum + parseFloat(order.total), 0);
+        document.getElementById('stat-revenue').textContent = `IDR ${totalRevenue.toLocaleString('id-ID')}`;
     };
 
     // --- Orders ---
@@ -162,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Render Orders Table
         if (orders.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Belum ada pesanan masuk.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Belum ada pesanan masuk.</td></tr>';
             return;
         }
 
@@ -179,7 +165,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>${date}</td>
                     <td>${itemsHTML}</td>
                     <td>IDR ${(parseFloat(order.total)||0).toLocaleString('id-ID')}</td>
-                    <td>${order.status}</td>
                     <td><button class="btn-secondary" onclick="deleteOrder('${order.id}')" style="color:red; padding:0.5rem;">Hapus</button></td>
                 </tr>
             `;
@@ -204,13 +189,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!tbody) return;
 
         if (products.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Produk kosong. Pastikan Anda sudah menjalankan init.sql atau tambah produk baru.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Produk kosong. Pastikan Anda sudah menjalankan init.sql atau tambah produk baru.</td></tr>';
             return;
         }
 
         tbody.innerHTML = products.map(product => `
             <tr>
-                <td>${product.id}</td>
                 <td><img src="${product.image}" alt="${product.name}" style="width:40px;height:40px;border-radius:5px;object-fit:cover;"></td>
                 <td>${product.name}</td>
                 <td>${product.category === 'harvest' ? 'Hasil Panen' : 'Bibit & Alat'}</td>
@@ -229,11 +213,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.getElementById('add-product-btn')?.addEventListener('click', () => {
         productForm.reset();
-        document.getElementById('edit-product-id').value = '';
+        document.getElementById('prod-id').value = '';
         productModal.style.display = 'flex';
     });
 
-    document.getElementById('close-modal-btn')?.addEventListener('click', () => {
+    document.querySelector('.close-modal')?.addEventListener('click', () => {
         productModal.style.display = 'none';
     });
 
@@ -329,6 +313,12 @@ document.addEventListener('DOMContentLoaded', () => {
             // Previews
             if (content['hero-img']) document.getElementById('preview-hero-img').src = content['hero-img'];
             if (content['about-img']) document.getElementById('preview-about-img').src = content['about-img'];
+            // populate text boxes if present
+            const heroImgText = document.getElementById('edit-hero-img');
+            if(heroImgText) heroImgText.value = content['hero-img'] || '';
+            const aboutImgText = document.getElementById('edit-about-img');
+            if(aboutImgText) aboutImgText.value = content['about-img'] || '';
+            
         } catch (e) {
             console.error('Fetch content error:', e);
         }
@@ -356,10 +346,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const heroImg = document.getElementById('upload-hero-img').files[0];
-        if (heroImg) content['hero-img'] = await getBase64(heroImg);
+        if (heroImg) {
+            content['hero-img'] = await getBase64(heroImg);
+        } else {
+            const heroText = document.getElementById('edit-hero-img');
+            if (heroText && heroText.value) content['hero-img'] = heroText.value;
+        }
 
         const aboutImg = document.getElementById('upload-about-img').files[0];
-        if (aboutImg) content['about-img'] = await getBase64(aboutImg);
+        if (aboutImg) {
+            content['about-img'] = await getBase64(aboutImg);
+        } else {
+            const aboutText = document.getElementById('edit-about-img');
+            if (aboutText && aboutText.value) content['about-img'] = aboutText.value;
+        }
 
         try {
             await fetch('api.php?action=save_content', {
