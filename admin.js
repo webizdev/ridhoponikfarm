@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!tbody) return;
         
         // Render Recent Activity (Home tab)
-        const recentActivityTable = document.querySelector('#recent-activity-table tbody');
+        const recentActivityTable = document.getElementById('recent-activity-body');
         if (recentActivityTable) {
             recentActivityTable.innerHTML = orders.length > 0 ? orders.slice(0, 5).map(o => `
                 <tr>
@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Render Orders Table
         if (orders.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Belum ada pesanan masuk.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Belum ada pesanan masuk.</td></tr>';
             return;
         }
 
@@ -179,6 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>${date}</td>
                     <td>${itemsHTML}</td>
                     <td>IDR ${(parseFloat(order.total)||0).toLocaleString('id-ID')}</td>
+                    <td>${order.status}</td>
                     <td><button class="btn-secondary" onclick="deleteOrder('${order.id}')" style="color:red; padding:0.5rem;">Hapus</button></td>
                 </tr>
             `;
@@ -203,12 +204,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!tbody) return;
 
         if (products.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Produk kosong. Pastikan Anda sudah menjalankan init.sql atau tambah produk baru.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Produk kosong. Pastikan Anda sudah menjalankan init.sql atau tambah produk baru.</td></tr>';
             return;
         }
 
         tbody.innerHTML = products.map(product => `
             <tr>
+                <td>${product.id}</td>
                 <td><img src="${product.image}" alt="${product.name}" style="width:40px;height:40px;border-radius:5px;object-fit:cover;"></td>
                 <td>${product.name}</td>
                 <td>${product.category === 'harvest' ? 'Hasil Panen' : 'Bibit & Alat'}</td>
@@ -227,11 +229,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.getElementById('add-product-btn')?.addEventListener('click', () => {
         productForm.reset();
-        document.getElementById('prod-id').value = '';
+        document.getElementById('edit-product-id').value = '';
         productModal.style.display = 'flex';
     });
 
-    document.querySelector('.close-modal')?.addEventListener('click', () => {
+    document.getElementById('close-modal-btn')?.addEventListener('click', () => {
         productModal.style.display = 'none';
     });
 
@@ -304,7 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'hero-desc': 'Menanam sayuran padat nutrisi di lingkungan terkontrol tanpa pestisida. Pengiriman segar langsung dari kebun kami di Sumedang.',
         'hero-img': 'assets/hero_lettuce.png',
         'about-title': 'Tentang Kami',
-        'about-p1': '<strong>RIDHOPONIC FARM</strong> hadir sebagai solusi pertanian masa depan yang memadukan teknologi hidroponik modern dengan komitmen terhadap keamanan pangan. Berbasis di Kecamatan Tanjungsari, Kabupaten Sumedang, Barat, kami berfokus pada produksi sayuran segar berkualitas tinggi yang dikembangkan di lingkungan terkontrol.',
+        'about-p1': '<strong>RIDHOPONIC FARM</strong> hadir sebagai solusi pertanian masa depan yang memadukan teknologi hidroponik modern dengan komitmen terhadap keamanan pangan. Berbasis di Kecamatan Tanjungsari, Kabupaten Sumedang, Jawa Barat, kami berfokus pada produksi sayuran segar berkualitas tinggi yang dikembangkan di lingkungan terkontrol.',
         'about-p2': 'Kepercayaan konsumen adalah prioritas utama kami. Oleh karena itu, seluruh operasional dan produk RIDHOPONIC FARM telah resmi terdaftar dalam sistem <strong style="white-space: nowrap;">NIB: 1712240062057</strong> dan menjamin aspek kehalalan melalui <strong>Sertifikasi HALAL Indonesia</strong>. Dengan standar manajemen nutrisi yang ketat dan sistem panen harian, kami memastikan setiap helai sayuran yang sampai ke meja Anda adalah produk yang legal, aman, dan penuh nutrisi.',
         'about-img': 'assets/hero_lettuce.png',
         'contact-address': 'Jalan Raya Tanjungsari Nomor 345, RT/RW 003/004, Dusun Langensari, Desa Gudang, Kec. Tanjungsari, Kab. Sumedang, Jawa Barat, 45362',
