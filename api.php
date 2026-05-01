@@ -51,9 +51,9 @@ switch ($action) {
     case 'get_content':
         $stmt = $pdo->query("SELECT * FROM site_content");
         $results = $stmt->fetchAll();
-        $content = [];
+        $content = new stdClass();
         foreach ($results as $row) {
-            $content[$row['content_key']] = $row['content_value'];
+            $content->{$row['content_key']} = $row['content_value'];
         }
         echo json_encode($content);
         break;
@@ -102,8 +102,8 @@ switch ($action) {
 
     case 'save_password':
         $data = json_decode(file_get_contents('php://input'), true);
-        $stmt = $pdo->prepare("UPDATE settings SET setting_value=? WHERE setting_key='admin_pass'");
-        $stmt->execute([$data['password']]);
+        $stmt = $pdo->prepare("INSERT INTO settings (setting_key, setting_value) VALUES ('admin_pass', ?) ON DUPLICATE KEY UPDATE setting_value=?");
+        $stmt->execute([$data['password'], $data['password']]);
         echo json_encode(['success' => true]);
         break;
 
