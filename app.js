@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let products = [];
     let visibleCount = 6;
-    const catalogGrid = document.getElementById('product-list');
+    const catalogGrid = document.getElementById('product-grid');
     const loadMoreBtn = document.getElementById('load-more-btn');
 
     const fetchProducts = async () => {
@@ -203,96 +203,102 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // Attach event listeners to new Add to Cart buttons
         document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const id = btn.getAttribute('data-id');
-                const name = btn.getAttribute('data-name');
-                const price = parseInt(btn.getAttribute('data-price'));
-                const existing = cart.find(i => i.id == id);
-                if (existing) existing.quantity++;
-                else cart.push({ id, name, price, quantity: 1 });
+            btn.addEventListener('click', (e) => {
+                const id = e.target.dataset.id;
+                const name = e.target.dataset.name;
+                const price = parseFloat(e.target.dataset.price);
+
+                const existingItem = cart.find(item => item.id === id);
+                if (existingItem) {
+                    existingItem.quantity += 1;
+                } else {
+                    cart.push({ id, name, price, quantity: 1 });
+                }
+                
                 saveAndRenderCart();
-                if (!cartSidebar.classList.contains('open')) toggleCart();
+                
+                // Show notification feedback
+                const originalText = e.target.textContent;
+                e.target.textContent = 'Ditambahkan!';
+                e.target.style.background = 'var(--accent)';
+                setTimeout(() => {
+                    e.target.textContent = originalText;
+                    e.target.style.background = 'var(--primary)';
+                }, 1000);
             });
         });
     };
 
-    loadMoreBtn?.addEventListener('click', () => {
-        visibleCount = products.length; // Show all
-        renderProducts();
-        // Trigger reveal for new items
-        setTimeout(revealOnScroll, 100);
-    });
-
-    // Checkout via WhatsApp & Save Order Locally
-    checkoutBtn?.addEventListener('click', async () => {
-        if (cart.length === 0) return alert('Keranjang kosong!');
-        const total = cart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
-
-        try {
-            // Save order to SQL Database
-            const orderData = {
-                items: cart,
-                total: total
-            };
-
-            const response = await fetch('api.php?action=add_order', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(orderData)
-            });
-
-            if (!response.ok) throw new Error('Failed to save order to database');
-
-            // Format WhatsApp Message
-            let msg = 'Halo Ridhoponic Farm, saya memesan:\n\n';
-            cart.forEach((i, idx) => msg += `${idx+1}. ${i.name} (${i.quantity}x)\n`);
-            msg += `\nTotal: IDR ${total.toLocaleString('id-ID')}`;
-            msg += '\n\nApakah stok masih tersedia?';
-            
-            const waUrl = `https://wa.me/6285176960803?text=${encodeURIComponent(msg)}`;
-            
-            // Clear cart & redirect
-            cart = [];
-            saveAndRenderCart();
-            toggleCart();
-            window.open(waUrl, '_blank');
-        } catch (error) {
-            console.error('Error saving order:', error);
-            alert('Terjadi kesalahan saat memproses pesanan. Silakan coba lagi atau hubungi via WhatsApp langsung.');
-        }
-    });
-
-    // Category Filtering
+    // Handle Category Filtering
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             e.target.classList.add('active');
             
-            // Reset visible count on filter change
-            visibleCount = 6;
+            // If user changes category, reset visibleCount to show initial items again if they return to 'all'
+            // Optional: reset visibleCount = 6; 
             
             renderProducts();
-            setTimeout(revealOnScroll, 100);
         });
     });
 
-    // Header Shrink on Scroll
-    const header = document.querySelector('header');
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > 100) {
-            header.style.height = '60px';
-            header.style.boxShadow = '0 4px 20px rgba(0,0,0,0.08)';
-        } else {
-            header.style.height = '80px';
-            header.style.boxShadow = 'none';
+    // Handle Load More
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', () => {
+            visibleCount += 6; // Load 6 more items
+            renderProducts();
+        });
+    }
+
+    // Checkout via WhatsApp
+    checkoutBtn?.addEventListener('click', () => {
+        if (cart.length === 0) {
+            alert('Keranjang belanja Anda kosong.');
+            return;
         }
+
+        // Generate ID pesanan
+        const orderId = 'ORD-' + Math.floor(Math.random() * 1000000);
+        let message = `Halo Ridhoponic Farm!%0ASaya ingin memesan produk berikut:%0A%0A`;
+        
+        let total = 0;
+        cart.forEach((item, index) => {
+            const itemTotal = item.price * item.quantity;
+            message += `${index + 1}. ${item.name} - ${item.quantity}x (IDR ${itemTotal.toLocaleString('id-ID')})%0A`;
+            total += itemTotal;
+        });
+
+        message += `%0ATotal Pembayaran: *IDR ${total.toLocaleString('id-ID')}*%0A`;
+        message += `ID Pesanan: ${orderId}%0A%0AMohon info cara pembayaran dan pengiriman. Terima kasih.`;
+
+        // Save order to DB
+        fetch('api.php?action=add_order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                customer_name: 'WhatsApp Order',
+                items: cart,
+                total: total
+            })
+        }).then(() => {
+            // Clear cart
+            cart = [];
+            saveAndRenderCart();
+            toggleCart();
+
+            // Redirect to WA
+            window.open(`https://wa.me/6285176960803?text=${message}`, '_blank');
+        }).catch(err => {
+            console.error('Failed to save order', err);
+            // Still proceed to WA even if DB fails
+            window.open(`https://wa.me/6285176960803?text=${message}`, '_blank');
+        });
     });
 
-    // Fetch initial data
+    // Initialize Page
+    renderCart();
     fetchContent();
     fetchProducts();
-    
-    // Initial Render Cart
-    renderCart();
 });
