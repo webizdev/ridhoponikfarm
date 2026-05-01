@@ -133,6 +133,12 @@ nav a:hover {
     box-shadow: 0 4px 12px rgba(1, 45, 29, 0.2);
 }
 
+@media (max-width: 768px) {
+    .hide-mobile {
+        display: none !important;
+    }
+}
+
 .grab-button {
     background-color: #00B14F !important;
     color: white !important;
