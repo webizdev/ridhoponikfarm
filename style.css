@@ -250,7 +250,7 @@ nav a:hover {
 
 .section-title {
     text-align: center;
-    font-size: 2.25rem;
+    font-size: 2.5rem;
     margin-bottom: 3.5rem;
     color: var(--primary);
 }
@@ -546,7 +546,7 @@ nav a:hover {
 }
 
 .contact-info h2 {
-    font-size: 2.8rem;
+    font-size: 2.5rem;
     margin-bottom: 1rem;
     color: var(--primary);
 }
@@ -911,7 +911,9 @@ nav a:hover {
         font-size: 1.8rem; /* Reduced from 2.2rem */
     }
     
-    .section-title {
+    .section-title,
+    .about-section h2,
+    .contact-info h2 {
         font-size: 1.75rem;
         margin-bottom: 2rem;
     }
