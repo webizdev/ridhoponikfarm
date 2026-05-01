@@ -66,8 +66,7 @@ header {
     backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     height: 80px;
-    position: sticky;
-    top: 0;
+    position: sticky; top: 0;
     z-index: 1000;
     display: flex;
     align-items: center;
@@ -604,7 +603,7 @@ nav a:hover {
     }
 
     .about-section h2 {
-        font-size: 2rem;
+        font-size: 1.6rem; /* Reduced from 2rem */
         text-align: center;
     }
 
