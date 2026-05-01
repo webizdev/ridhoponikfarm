@@ -114,27 +114,16 @@ document.addEventListener('DOMContentLoaded', () => {
         link.addEventListener('click', () => mainNav.classList.remove('active'));
     });
 
-    // --- Content Management (Local Storage) ---
-    const defaultContent = {
-        'hero-subtitle': 'Pertanian Berkelanjutan',
-        'hero-title': 'Hidroponik Premium, <br>Segar Sampai Meja Anda.',
-        'hero-desc': 'Menanam sayuran padat nutrisi di lingkungan terkontrol tanpa pestisida. Pengiriman segar langsung dari kebun kami di Sumedang.',
-        'hero-img': 'assets/hero_lettuce.png',
-        'about-title': 'Tentang Kami',
-        'about-p1': '<strong>RIDHOPONIC FARM</strong> hadir sebagai solusi pertanian masa depan yang memadukan teknologi hidroponik modern dengan komitmen terhadap keamanan pangan. Berbasis di Kecamatan Tanjungsari, Kabupaten Sumedang, Jawa Barat, kami berfokus pada produksi sayuran segar berkualitas tinggi yang dikembangkan di lingkungan terkontrol.',
-        'about-p2': 'Kepercayaan konsumen adalah prioritas utama kami. Oleh karena itu, seluruh operasional dan produk RIDHOPONIC FARM telah resmi terdaftar dalam sistem <strong style="white-space: nowrap;">NIB: 1712240062057</strong> dan menjamin aspek kehalalan melalui <strong>Sertifikasi HALAL Indonesia</strong>. Dengan standar manajemen nutrisi yang ketat dan sistem panen harian, kami memastikan setiap helai sayuran yang sampai ke meja Anda adalah produk yang legal, aman, dan penuh nutrisi.',
-        'about-img': 'assets/hero_lettuce.png',
-        'contact-address': 'Jalan Raya Tanjungsari Nomor 345, RT/RW 003/004, Dusun Langensari, Desa Gudang, Kec. Tanjungsari, Kab. Sumedang, Jawa Barat, 45362',
-        'contact-wa': '085176960803 | 085220933263',
-        'contact-hours': 'Senin – Jumat: 08:00 - 17:00 WIB'
-    };
-
     const fetchContent = async () => {
         try {
             const response = await fetch('api.php?action=get_content');
-            const dbContent = await response.json();
-            const content = { ...defaultContent, ...dbContent };
+            const content = await response.json();
             
+            if (content.error) {
+                console.error('DB Content Error:', content.error);
+                return;
+            }
+
             Object.keys(content).forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
@@ -144,44 +133,30 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         } catch (error) {
             console.error('Error fetching content:', error);
-            // Fallback to default
-            Object.keys(defaultContent).forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    if (el.tagName === 'IMG') el.src = defaultContent[id];
-                    else el.innerHTML = defaultContent[id];
-                }
-            });
         }
     };
 
-    // --- Product Management (Local Storage) ---
-    const defaultProducts = [
-        { id: "1", name: "Selada Hijau", category: "harvest", price: 18000, description: "Renyah & Manis", image: "assets/hero_lettuce.png" },
-        { id: "2", name: "Daun Bawang", category: "harvest", price: 12000, description: "Aromatik Segar", image: "assets/product_scallions.png" },
-        { id: "3", name: "Daun Pegagan", category: "harvest", price: 25000, description: "Tanaman Herbal", image: "assets/product_pegagan_popohan.png" },
-        { id: "4", name: "Daun Popohan", category: "harvest", price: 22000, description: "Sayuran Tradisional", image: "assets/product_pegagan_popohan.png" },
-        { id: "5", name: "Benih Sayuran Premium", category: "supplies", price: 15000, description: "Berbagai Varian", image: "assets/product_seeds_equipment.png" },
-        { id: "6", name: "Nutrisi AB Mix", category: "supplies", price: 45000, description: "1 Liter Set", image: "assets/product_seeds_equipment.png" },
-        { id: "7", name: "Netpot Hidroponik", category: "supplies", price: 10000, description: "Set 20 Pcs", image: "assets/product_seeds_equipment.png" },
-        { id: "8", name: "Rockwool Hidroponik", category: "supplies", price: 18000, description: "Set 18 Pcs", image: "assets/product_seeds_equipment.png" }
-    ];
-
     let products = [];
     let visibleCount = 6;
-    const catalogGrid = document.querySelector('.catalog-grid');
+    const catalogGrid = document.getElementById('catalog-grid-container');
     const loadMoreBtn = document.getElementById('load-more-btn');
 
     const fetchProducts = async () => {
         try {
             const response = await fetch('api.php?action=get_products');
             const dbProducts = await response.json();
-            products = dbProducts.length > 0 ? dbProducts : defaultProducts;
+            
+            if (dbProducts.error) {
+                console.error('DB Products Error:', dbProducts.error);
+                catalogGrid.innerHTML = '<p class="error-msg" style="grid-column: 1/-1; text-align: center;">Gagal memuat produk. Hubungi admin.</p>';
+                return;
+            }
+
+            products = dbProducts;
             renderProducts();
         } catch (error) {
             console.error('Error fetching products:', error);
-            products = defaultProducts;
-            renderProducts();
+            catalogGrid.innerHTML = '<p class="error-msg" style="grid-column: 1/-1; text-align: center;">Koneksi gagal. Silakan muat ulang halaman.</p>';
         }
     };
 
@@ -189,6 +164,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!catalogGrid) return;
         const currentFilter = document.querySelector('.filter-btn.active')?.dataset.filter || 'all';
         
+        if (products.length === 0) {
+            catalogGrid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 2rem;">Produk belum tersedia.</div>';
+            if (loadMoreBtn) loadMoreBtn.parentElement.style.display = 'none';
+            return;
+        }
+
         catalogGrid.innerHTML = products.map((product, index) => {
             const isVisible = (currentFilter === 'all' || product.category === currentFilter);
             // On 'all' filter, we apply the Load More limit. On specific categories, we show all filtered items.
