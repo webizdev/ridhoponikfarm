@@ -66,7 +66,8 @@ header {
     backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     height: 80px;
-    position: sticky; top: 0;
+    position: sticky;
+    top: 0;
     z-index: 1000;
     display: flex;
     align-items: center;
@@ -613,11 +614,25 @@ nav a:hover {
     
     .contact-grid {
         grid-template-columns: 1fr;
-        gap: 3rem;
+        gap: 2.5rem;
+        text-align: center;
+    }
+
+    .contact-info p {
+        margin: 0 auto 1.5rem;
+        max-width: 450px;
+    }
+
+    .map-container {
+        border-radius: 20px;
+        overflow: hidden;
+        height: 280px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
     }
     
-    .map-container {
-        height: 300px;
+    .footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 3rem;
     }
 }
 
@@ -753,11 +768,22 @@ footer {
 @media (max-width: 580px) {
     .footer-grid {
         grid-template-columns: 1fr;
+        gap: 2.5rem;
+        text-align: center;
     }
+    
+    .cert-badges, .social-links {
+        justify-content: center;
+    }
+
     .footer-bottom {
         flex-direction: column;
         gap: 1.5rem;
         text-align: center;
+    }
+    .legal-links {
+        justify-content: center;
+        gap: 1.5rem;
     }
 }
 
