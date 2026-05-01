@@ -533,6 +533,24 @@ nav a:hover {
     box-shadow: 0 20px 40px rgba(0,0,0,0.1);
 }
 
+@media (max-width: 968px) {
+    .about-grid {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+    }
+
+    .section-title,
+    .about-section h2,
+    .contact-info h2 {
+        font-size: 2.1rem;
+        text-align: center;
+    }
+
+    .about-image-container {
+        order: -1; /* Image first on mobile */
+    }
+}
+
 /* Contact Section */
 .contact {
     padding: var(--section-gap) 0;
@@ -542,7 +560,7 @@ nav a:hover {
     display: grid;
     grid-template-columns: 1fr 1.2fr;
     gap: 5rem;
-    align-items: center;
+    align-items: center; /* Vertically center the text and map */
 }
 
 .contact-info h2 {
@@ -555,13 +573,13 @@ nav a:hover {
     display: flex;
     gap: 1.25rem;
     margin-bottom: 1.5rem;
-    align-items: flex-start;
+    align-items: flex-start; /* Align icon to top of text */
 }
 
 .info-item .material-symbols-outlined {
     color: var(--primary);
     font-size: 1.6rem;
-    margin-top: 0.2rem;
+    margin-top: 0.2rem; /* Minor adjustment to align icon with first line */
 }
 
 .info-item h4 {
@@ -574,18 +592,6 @@ nav a:hover {
     font-size: 0.95rem;
     color: var(--text-on-surface-variant);
     line-height: 1.5;
-}
-
-.contact-buttons {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-    margin-top: 2rem;
-}
-
-.contact-buttons .cta-button {
-    flex: 0 1 auto;
-    min-width: 200px;
 }
 
 .map-container {
@@ -818,7 +824,7 @@ nav a:hover {
     }
     
     .hero-content h1 {
-        font-size: 2.2rem; /* Reduced from 2.5rem */
+        font-size: 2.5rem;
     }
 
     .hero-content p {
@@ -884,9 +890,7 @@ nav a:hover {
         box-shadow: 0 10px 30px rgba(0,0,0,0.05);
     }
     
-    .logo {
-        font-size: 1.8rem; /* Enlarged from 1.6rem */
-    }
+    /* Logo size handled dynamically or kept at base 1.6rem for tablet */
 
     .cart-icon-btn .material-symbols-outlined,
     .menu-toggle .material-symbols-outlined {
@@ -908,7 +912,7 @@ nav a:hover {
     }
     
     .hero-content h1 {
-        font-size: 1.8rem; /* Reduced from 2.2rem */
+        font-size: 2rem;
     }
     
     .section-title,
@@ -923,7 +927,7 @@ nav a:hover {
     }
 
     .logo {
-        font-size: 1.5rem; /* Enlarged from 1.3rem */
+        font-size: 1.4rem;
     }
 
     .cart-sidebar {
@@ -931,10 +935,7 @@ nav a:hover {
     }
 }
 @media (max-width: 768px) {
-    .logo {
-        font-size: 2rem;
-        letter-spacing: 0;
-    }
+    /* Removed duplicate logo scaling */
     
     .cta-button {
         padding: 0.6rem 1.2rem;
@@ -951,7 +952,7 @@ nav a:hover {
     }
     
     .product-info h3 {
-        font-size: 1.1rem;
+        font-size: 1.05rem;
     }
 
     .category-filters {
@@ -995,9 +996,17 @@ footer {
 
 .footer-col h4 {
     font-size: 1.1rem;
-    margin-bottom: 2rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--accent);
     text-transform: uppercase;
     letter-spacing: 0.1em;
+}
+
+.footer-col p {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.8;
 }
 
 .footer-links {
@@ -1005,32 +1014,19 @@ footer {
 }
 
 .footer-links li {
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
 }
 
 .footer-links a {
-    color: var(--accent);
+    color: rgba(255, 255, 255, 0.7);
     text-decoration: none;
-    font-size: 0.95rem;
-    transition: color 0.3s;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
 }
 
 .footer-links a:hover {
-    color: white;
-}
-
-.cert-badges {
-    display: flex;
-    gap: 1.5rem;
-    margin-top: 1.5rem;
-}
-
-.cert-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.75rem;
-    font-weight: 600;
+    color: var(--accent);
+    padding-left: 5px;
 }
 
 .social-links {
@@ -1042,14 +1038,14 @@ footer {
 .social-btn {
     width: 40px;
     height: 40px;
-    background: rgba(255,255,255,0.1);
     border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
     text-decoration: none;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
 }
 
 .social-btn:hover {
@@ -1058,14 +1054,41 @@ footer {
     transform: translateY(-3px);
 }
 
+.cert-badges {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    align-items: center;
+}
+
+.cert-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: center;
+}
+
+.cert-item .material-symbols-outlined {
+    font-size: 2rem;
+    color: var(--accent);
+}
+
+.cert-item span {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(255, 255, 255, 0.5);
+}
+
 .footer-bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
     padding-top: 2rem;
-    border-top: 1px solid rgba(255,255,255,0.1);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.85rem;
-    opacity: 0.8;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
 }
 
 .legal-links {
@@ -1074,8 +1097,41 @@ footer {
 }
 
 .legal-links a {
-    color: white;
+    color: inherit;
     text-decoration: none;
+}
+
+.legal-links a:hover {
+    color: white;
+}
+
+/* Animations */
+.reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.reveal.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.cart-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: var(--primary);
+    color: white;
+    font-size: 0.65rem;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    border: 2px solid white;
 }
 
 @media (max-width: 968px) {
@@ -1085,7 +1141,7 @@ footer {
     }
 }
 
-@media (max-width: 580px) {
+@media (max-width: 480px) {
     .footer-grid {
         grid-template-columns: 1fr;
         gap: 2.5rem;
@@ -1105,21 +1161,4 @@ footer {
         justify-content: center;
         gap: 1.5rem;
     }
-}
-
-/* Animations */
-.reveal {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.reveal.active {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
 }
