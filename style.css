@@ -706,6 +706,20 @@ nav a:hover {
         max-width: 450px;
     }
 
+    .info-item {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .info-item .material-symbols-outlined {
+        margin-top: 0;
+    }
+
+    .contact-buttons {
+        justify-content: center;
+    }
+
     .map-container {
         border-radius: 20px;
         overflow: hidden;
