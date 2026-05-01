@@ -1,5 +1,5 @@
-CREATE DATABASE IF NOT EXISTS ridhoponic_db;
-USE ridhoponic_db;
+CREATE DATABASE IF NOT EXISTS alilogis_ridhoponicfarm;
+USE alilogis_ridhoponicfarm;
 
 -- Table for Products
 CREATE TABLE IF NOT EXISTS products (

@@ -1,10 +1,10 @@
 <?php
 header('Content-Type: application/json');
 
-$host = 'db';
-$db   = 'ridhoponic_db';
-$user = 'root';
-$pass = 'root';
+$host = 'localhost';
+$db   = 'alilogis_ridhoponicfarm';
+$user = 'alilogis_ridhoponicfarm';
+$pass = 'WSYLBt7EZHzyH4wLg6BZ';
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";

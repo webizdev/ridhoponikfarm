@@ -8,15 +8,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const getSettings = () => JSON.parse(localStorage.getItem('ridhoponic_settings')) || { password: '12345' };
 
-    const checkAuth = () => {
-        const settings = getSettings();
-        if (passwordInput.value === settings.password) {
-            loginOverlay.style.display = 'none';
-            dashboard.classList.add('visible');
-            localStorage.setItem('ridhoponic_session', Date.now());
-            initDashboard();
-        } else {
-            alert('Password salah!');
+    const checkAuth = async () => {
+        const pass = passwordInput.value;
+        try {
+            const response = await fetch('api.php?action=get_settings');
+            const settings = await response.json();
+            const dbPass = settings.admin_pass || '12345';
+
+            if (pass === dbPass) {
+                loginOverlay.style.display = 'none';
+                dashboard.classList.add('visible');
+                localStorage.setItem('ridhoponic_session', Date.now());
+                initDashboard();
+            } else {
+                alert('Password salah!');
+            }
+        } catch (error) {
+            console.error('Auth error:', error);
+            // Fallback for demo/offline if needed, but better to enforce DB
+            alert('Gagal terhubung ke database untuk verifikasi.');
         }
     };
 
@@ -80,27 +90,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Dashboard Data Management (Local Storage) ---
     
-    const getOrders = () => JSON.parse(localStorage.getItem('ridhoponic_orders')) || [];
-    const getProducts = () => JSON.parse(localStorage.getItem('ridhoponic_products')) || [
-        { id: "1", name: "Selada Hijau", category: "harvest", price: 18000, description: "Renyah & Manis", image: "assets/hero_lettuce.png" },
-        { id: "2", name: "Daun Bawang", category: "harvest", price: 12000, description: "Aromatik Segar", image: "assets/product_scallions.png" },
-        { id: "3", name: "Daun Pegagan", category: "harvest", price: 25000, description: "Tanaman Herbal", image: "assets/product_pegagan_popohan.png" },
-        { id: "4", name: "Daun Popohan", category: "harvest", price: 22000, description: "Sayuran Tradisional", image: "assets/product_pegagan_popohan.png" },
-        { id: "5", name: "Benih Sayuran Premium", category: "supplies", price: 15000, description: "Berbagai Varian", image: "assets/product_seeds_equipment.png" },
-        { id: "6", name: "Nutrisi AB Mix", category: "supplies", price: 45000, description: "1 Liter Set", image: "assets/product_seeds_equipment.png" },
-        { id: "7", name: "Netpot Hidroponik", category: "supplies", price: 10000, description: "Set 20 Pcs", image: "assets/product_seeds_equipment.png" }
-    ];
-
-    const initDashboard = () => {
-        updateStats();
-        fetchOrders();
-        fetchProducts();
-        fetchContent();
+    const initDashboard = async () => {
+        await updateStats();
+        await fetchOrders();
+        await fetchProducts();
+        await fetchContent();
     };
 
-    const updateStats = () => {
-        const orders = getOrders();
-        const products = getProducts();
+    const getOrders = async () => {
+        try {
+            const response = await fetch('api.php?action=get_orders');
+            return await response.json();
+        } catch (e) {
+            console.error('Error fetching orders:', e);
+            return [];
+        }
+    };
+
+    const getProducts = async () => {
+        try {
+            const response = await fetch('api.php?action=get_products');
+            return await response.json();
+        } catch (e) {
+            console.error('Error fetching products:', e);
+            return [];
+        }
+    };
+
+    const updateStats = async () => {
+        const orders = await getOrders();
+        const products = await getProducts();
         document.getElementById('stat-products').textContent = products.length;
         document.getElementById('stat-orders').textContent = orders.length;
         const totalRev = orders.reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
@@ -108,15 +127,15 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- Orders ---
-    const fetchOrders = () => {
-        const orders = getOrders();
+    const fetchOrders = async () => {
+        const orders = await getOrders();
         const tbody = document.getElementById('orders-table-body');
         if (!tbody) return;
         
         // Render Recent Activity (Home tab)
         const recentActivityTable = document.querySelector('#recent-activity-table tbody');
         if (recentActivityTable) {
-            recentActivityTable.innerHTML = orders.slice(-5).reverse().map(o => `
+            recentActivityTable.innerHTML = orders.slice(0, 5).map(o => `
                 <tr>
                     <td>${new Date(o.created_at).toLocaleDateString()}</td>
                     <td>Pesanan Baru #${o.id}</td>
@@ -126,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Render Orders Table
-        tbody.innerHTML = orders.reverse().map(order => {
+        tbody.innerHTML = orders.map(order => {
             const date = new Date(order.created_at).toLocaleString('id-ID');
             let itemsHTML = '';
             try {
@@ -145,18 +164,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
     };
 
-    window.deleteOrder = (id) => {
+    window.deleteOrder = async (id) => {
         if(confirm('Yakin hapus orderan ini?')) {
-            let orders = getOrders();
-            orders = orders.filter(o => o.id != id);
-            localStorage.setItem('ridhoponic_orders', JSON.stringify(orders));
-            initDashboard();
+            try {
+                await fetch(`api.php?action=delete_order&id=${id}`);
+                await initDashboard();
+            } catch (e) {
+                console.error('Delete order error:', e);
+            }
         }
     };
 
     // --- Products ---
-    const fetchProducts = () => {
-        const products = getProducts();
+    const fetchProducts = async () => {
+        const products = await getProducts();
         const tbody = document.getElementById('products-table-body');
         if (!tbody) return;
         tbody.innerHTML = products.map(product => `
@@ -187,8 +208,8 @@ document.addEventListener('DOMContentLoaded', () => {
         productModal.style.display = 'none';
     });
 
-    window.editProduct = (id) => {
-        const products = getProducts();
+    window.editProduct = async (id) => {
+        const products = await getProducts();
         const product = products.find(p => p.id == id);
         if (product) {
             document.getElementById('edit-product-id').value = product.id;
@@ -201,12 +222,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    window.deleteProduct = (id) => {
+    window.deleteProduct = async (id) => {
         if(confirm('Hapus produk ini?')) {
-            let products = getProducts();
-            products = products.filter(p => p.id != id);
-            localStorage.setItem('ridhoponic_products', JSON.stringify(products));
-            initDashboard();
+            try {
+                await fetch(`api.php?action=delete_product&id=${id}`);
+                await initDashboard();
+            } catch (e) {
+                console.error('Delete product error:', e);
+            }
         }
     };
 
@@ -214,32 +237,28 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const fileInput = document.getElementById('upload-p-img');
         
-        const saveProduct = (imgData) => {
-            let products = getProducts();
+        const saveProduct = async (imgData) => {
             const prodId = document.getElementById('edit-product-id').value;
             const newProduct = {
-                id: prodId || Date.now().toString(),
+                id: prodId || '',
                 name: document.getElementById('p-name').value,
                 category: document.getElementById('p-category').value,
                 price: document.getElementById('p-price').value,
                 description: document.getElementById('p-desc').value,
-                image: imgData
+                image: imgData || document.getElementById('p-image').value || 'assets/hero_lettuce.png'
             };
 
-            if (prodId) {
-                const idx = products.findIndex(p => p.id == prodId);
-                if(idx > -1) {
-                    if(!imgData) newProduct.image = products[idx].image; // keep old image if not uploaded
-                    products[idx] = newProduct;
-                }
-            } else {
-                if(!newProduct.image) newProduct.image = document.getElementById('p-image').value || 'assets/hero_lettuce.png'; // use text input or default
-                products.push(newProduct);
+            try {
+                await fetch('api.php?action=save_product', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newProduct)
+                });
+                productModal.style.display = 'none';
+                await initDashboard();
+            } catch (err) {
+                console.error('Save product error:', err);
             }
-
-            localStorage.setItem('ridhoponic_products', JSON.stringify(products));
-            productModal.style.display = 'none';
-            initDashboard();
         };
 
         if (fileInput.files.length > 0) {
@@ -266,21 +285,30 @@ document.addEventListener('DOMContentLoaded', () => {
         'contact-hours': 'Senin – Jumat: 08:00 - 17:00 WIB'
     };
 
-    const fetchContent = () => {
-        const content = JSON.parse(localStorage.getItem('ridhoponic_content')) || defaultContent;
-        // Map to inputs
-        ['hero-subtitle', 'hero-title', 'hero-desc', 'about-title', 'about-p1', 'about-p2', 'contact-address', 'contact-wa', 'contact-hours'].forEach(id => {
-            const input = document.getElementById(`edit-${id}`);
-            if (input) input.value = content[id] || '';
-        });
-        
-        // Previews
-        if (content['hero-img']) document.getElementById('preview-hero-img').src = content['hero-img'];
-        if (content['about-img']) document.getElementById('preview-about-img').src = content['about-img'];
+    const fetchContent = async () => {
+        try {
+            const response = await fetch('api.php?action=get_content');
+            const dbContent = await response.json();
+            const content = { ...defaultContent, ...dbContent };
+
+            // Map to inputs
+            ['hero-subtitle', 'hero-title', 'hero-desc', 'about-title', 'about-p1', 'about-p2', 'contact-address', 'contact-wa', 'contact-hours'].forEach(id => {
+                const input = document.getElementById(`edit-${id}`);
+                if (input) input.value = content[id] || '';
+            });
+            
+            // Previews
+            if (content['hero-img']) document.getElementById('preview-hero-img').src = content['hero-img'];
+            if (content['about-img']) document.getElementById('preview-about-img').src = content['about-img'];
+        } catch (e) {
+            console.error('Fetch content error:', e);
+        }
     };
 
     document.getElementById('save-content-btn')?.addEventListener('click', async () => {
-        const content = JSON.parse(localStorage.getItem('ridhoponic_content')) || defaultContent;
+        const response = await fetch('api.php?action=get_content');
+        const content = await response.json();
+        
         const btn = document.getElementById('save-content-btn');
         btn.textContent = 'Menyimpan...';
 
@@ -304,18 +332,35 @@ document.addEventListener('DOMContentLoaded', () => {
         const aboutImg = document.getElementById('upload-about-img').files[0];
         if (aboutImg) content['about-img'] = await getBase64(aboutImg);
 
-        localStorage.setItem('ridhoponic_content', JSON.stringify(content));
-        alert('Konten berhasil disimpan di Local Storage!');
+        try {
+            await fetch('api.php?action=save_content', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(content)
+            });
+            alert('Konten berhasil disimpan ke Database!');
+            await fetchContent();
+        } catch (err) {
+            console.error('Save content error:', err);
+        }
         btn.textContent = 'Simpan Semua Konten';
     });
 
     // --- Settings ---
-    document.getElementById('save-password-btn')?.addEventListener('click', () => {
+    document.getElementById('save-password-btn')?.addEventListener('click', async () => {
         const newPass = document.getElementById('new-password').value;
         if(newPass.trim() !== '') {
-            localStorage.setItem('ridhoponic_settings', JSON.stringify({ password: newPass }));
-            alert('Password berhasil diperbarui!');
-            document.getElementById('new-password').value = '';
+            try {
+                await fetch('api.php?action=save_password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: newPass })
+                });
+                alert('Password berhasil diperbarui di Database!');
+                document.getElementById('new-password').value = '';
+            } catch (err) {
+                console.error('Save password error:', err);
+            }
         } else {
             alert('Password tidak boleh kosong');
         }

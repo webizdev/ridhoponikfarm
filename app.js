@@ -129,15 +129,30 @@ document.addEventListener('DOMContentLoaded', () => {
         'contact-hours': 'Senin – Jumat: 08:00 - 17:00 WIB'
     };
 
-    const fetchContent = () => {
-        const content = JSON.parse(localStorage.getItem('ridhoponic_content')) || defaultContent;
-        Object.keys(content).forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                if (el.tagName === 'IMG') el.src = content[id];
-                else el.innerHTML = content[id];
-            }
-        });
+    const fetchContent = async () => {
+        try {
+            const response = await fetch('api.php?action=get_content');
+            const dbContent = await response.json();
+            const content = { ...defaultContent, ...dbContent };
+            
+            Object.keys(content).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    if (el.tagName === 'IMG') el.src = content[id];
+                    else el.innerHTML = content[id];
+                }
+            });
+        } catch (error) {
+            console.error('Error fetching content:', error);
+            // Fallback to default
+            Object.keys(defaultContent).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    if (el.tagName === 'IMG') el.src = defaultContent[id];
+                    else el.innerHTML = defaultContent[id];
+                }
+            });
+        }
     };
 
     // --- Product Management (Local Storage) ---
@@ -157,9 +172,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const catalogGrid = document.querySelector('.catalog-grid');
     const loadMoreBtn = document.getElementById('load-more-btn');
 
-    const fetchProducts = () => {
-        products = JSON.parse(localStorage.getItem('ridhoponic_products')) || defaultProducts;
-        renderProducts();
+    const fetchProducts = async () => {
+        try {
+            const response = await fetch('api.php?action=get_products');
+            const dbProducts = await response.json();
+            products = dbProducts.length > 0 ? dbProducts : defaultProducts;
+            renderProducts();
+        } catch (error) {
+            console.error('Error fetching products:', error);
+            products = defaultProducts;
+            renderProducts();
+        }
     };
 
     const renderProducts = () => {
@@ -222,31 +245,38 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Checkout via WhatsApp & Save Order Locally
-    checkoutBtn?.addEventListener('click', () => {
+    checkoutBtn?.addEventListener('click', async () => {
         if (cart.length === 0) return alert('Keranjang kosong!');
         const total = cart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
 
-        // Save order to Local Storage for Admin
-        const orders = JSON.parse(localStorage.getItem('ridhoponic_orders')) || [];
-        const newOrder = {
-            id: Date.now(),
-            created_at: new Date().toISOString(),
-            items: [...cart],
-            total: total,
-            status: 'Pending'
-        };
-        orders.push(newOrder);
-        localStorage.setItem('ridhoponic_orders', JSON.stringify(orders));
+        try {
+            // Save order to SQL Database
+            const orderData = {
+                items: cart,
+                total: total
+            };
 
-        // Format WhatsApp Message
-        let msg = 'Halo Ridhoponic Farm, saya memesan:\n\n';
-        cart.forEach((i, idx) => msg += `${idx+1}. ${i.name} (${i.quantity}x)\n`);
-        msg += `\nTotal: IDR ${total.toLocaleString('id-ID')}`;
-        window.open(`https://wa.me/6285176960803?text=${encodeURIComponent(msg)}`, '_blank');
-        
-        cart = [];
-        saveAndRenderCart();
-        toggleCart();
+            const response = await fetch('api.php?action=add_order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(orderData)
+            });
+
+            if (!response.ok) throw new Error('Failed to save order to database');
+
+            // Format WhatsApp Message
+            let msg = 'Halo Ridhoponic Farm, saya memesan:\n\n';
+            cart.forEach((i, idx) => msg += `${idx+1}. ${i.name} (${i.quantity}x)\n`);
+            msg += `\nTotal: IDR ${total.toLocaleString('id-ID')}`;
+            window.open(`https://wa.me/6285176960803?text=${encodeURIComponent(msg)}`, '_blank');
+            
+            cart = [];
+            saveAndRenderCart();
+            toggleCart();
+        } catch (error) {
+            console.error('Checkout error:', error);
+            alert('Terjadi kesalahan saat memproses pesanan. Silakan coba lagi.');
+        }
     });
 
     // Initial load

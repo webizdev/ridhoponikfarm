@@ -18,8 +18,10 @@ services:
     container_name: ridhoponic_db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: ridhoponic_db
+      MYSQL_ROOT_PASSWORD: WSYLBt7EZHzyH4wLg6BZ
+      MYSQL_DATABASE: alilogis_ridhoponicfarm
+      MYSQL_USER: alilogis_ridhoponicfarm
+      MYSQL_PASSWORD: WSYLBt7EZHzyH4wLg6BZ
     ports:
       - "3306:3306"
     volumes:
@@ -36,8 +38,8 @@ services:
       - "8081:80"
     environment:
       PMA_HOST: db
-      PMA_USER: root
-      PMA_PASSWORD: root
+      PMA_USER: alilogis_ridhoponicfarm
+      PMA_PASSWORD: WSYLBt7EZHzyH4wLg6BZ
     depends_on:
       - db
     networks:
