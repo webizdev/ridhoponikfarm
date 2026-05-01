@@ -836,6 +836,22 @@ nav a:hover {
         margin: 0 auto;
     }
     
+    .about-grid {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+        text-align: center;
+    }
+
+    .about-section p {
+        text-align: center;
+    }
+
+    .about-image-container {
+        order: -1;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
     .contact-grid {
         grid-template-columns: 1fr;
         gap: 2.5rem;
