@@ -234,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
         productModal.style.display = 'flex';
     });
 
-    document.querySelector('.close-modal')?.addEventListener('click', () => {
+    document.getElementById('close-modal-btn')?.addEventListener('click', () => {
         productModal.style.display = 'none';
     });
 
