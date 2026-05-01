@@ -13,6 +13,13 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch('api.php?action=get_settings');
             const settings = await response.json();
+            
+            if (settings.error) {
+                console.error('Database Error:', settings.error);
+                alert('Database belum siap: ' + settings.error + '\nPastikan Anda sudah menjalankan init.sql.');
+                return;
+            }
+
             const dbPass = settings.admin_pass || '12345';
 
             if (pass === dbPass) {
@@ -25,8 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             console.error('Auth error:', error);
-            // Fallback for demo/offline if needed, but better to enforce DB
-            alert('Gagal terhubung ke database untuk verifikasi.');
+            alert('Gagal terhubung ke database. Silakan periksa koneksi internet atau server.');
         }
     };
 
@@ -100,7 +106,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const getOrders = async () => {
         try {
             const response = await fetch('api.php?action=get_orders');
-            return await response.json();
+            const data = await response.json();
+            if (data.error) {
+                console.error('DB Error:', data.error);
+                return [];
+            }
+            return Array.isArray(data) ? data : [];
         } catch (e) {
             console.error('Error fetching orders:', e);
             return [];
@@ -110,7 +121,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const getProducts = async () => {
         try {
             const response = await fetch('api.php?action=get_products');
-            return await response.json();
+            const data = await response.json();
+            if (data.error) {
+                console.error('DB Error:', data.error);
+                return [];
+            }
+            return Array.isArray(data) ? data : [];
         } catch (e) {
             console.error('Error fetching products:', e);
             return [];
@@ -135,16 +151,21 @@ document.addEventListener('DOMContentLoaded', () => {
         // Render Recent Activity (Home tab)
         const recentActivityTable = document.querySelector('#recent-activity-table tbody');
         if (recentActivityTable) {
-            recentActivityTable.innerHTML = orders.slice(0, 5).map(o => `
+            recentActivityTable.innerHTML = orders.length > 0 ? orders.slice(0, 5).map(o => `
                 <tr>
                     <td>${new Date(o.created_at).toLocaleDateString()}</td>
                     <td>Pesanan Baru #${o.id}</td>
                     <td>IDR ${(parseFloat(o.total)||0).toLocaleString('id-ID')}</td>
                 </tr>
-            `).join('') || '<tr><td colspan="3">Belum ada aktivitas.</td></tr>';
+            `).join('') : '<tr><td colspan="3">Belum ada aktivitas.</td></tr>';
         }
 
         // Render Orders Table
+        if (orders.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Belum ada pesanan masuk.</td></tr>';
+            return;
+        }
+
         tbody.innerHTML = orders.map(order => {
             const date = new Date(order.created_at).toLocaleString('id-ID');
             let itemsHTML = '';
@@ -180,6 +201,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const products = await getProducts();
         const tbody = document.getElementById('products-table-body');
         if (!tbody) return;
+
+        if (products.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Produk kosong. Pastikan Anda sudah menjalankan init.sql atau tambah produk baru.</td></tr>';
+            return;
+        }
+
         tbody.innerHTML = products.map(product => `
             <tr>
                 <td><img src="${product.image}" alt="${product.name}" style="width:40px;height:40px;border-radius:5px;object-fit:cover;"></td>
@@ -277,8 +304,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'hero-desc': 'Menanam sayuran padat nutrisi di lingkungan terkontrol tanpa pestisida. Pengiriman segar langsung dari kebun kami di Sumedang.',
         'hero-img': 'assets/hero_lettuce.png',
         'about-title': 'Tentang Kami',
-        'about-p1': '<strong>RIDHOPONIC FARM</strong> hadir sebagai solusi pertanian masa depan yang memadukan teknologi hidroponik modern dengan komitmen terhadap keamanan pangan. Berbasis di Kecamatan Tanjungsari, Kabupaten Sumedang, Jawa Barat, kami berfokus pada produksi sayuran segar berkualitas tinggi yang dikembangkan di lingkungan terkontrol.',
-        'about-p2': 'Kepercayaan konsumen adalah prioritas utama kami. Oleh karena itu, seluruh operasional dan produk RIDHOPONIC FARM telah resmi terdaftar dalam sistem <strong style="white-space: nowrap;">NIB: 1712240062057</strong> dan menjamin aspek kehalalan melalui <strong>Sertifikasi HALAL Indonesia</strong>. Dengan standar manajemen nutrisi yang ketat dan sistem panen harian, kami memastikan setiap helai sayuran yang sampai ke meja Anda adalah produk yang legal, aman, and penuh nutrisi.',
+        'about-p1': '<strong>RIDHOPONIC FARM</strong> hadir sebagai solusi pertanian masa depan yang memadukan teknologi hidroponik modern dengan komitmen terhadap keamanan pangan. Berbasis di Kecamatan Tanjungsari, Kabupaten Sumedang, Barat, kami berfokus pada produksi sayuran segar berkualitas tinggi yang dikembangkan di lingkungan terkontrol.',
+        'about-p2': 'Kepercayaan konsumen adalah prioritas utama kami. Oleh karena itu, seluruh operasional dan produk RIDHOPONIC FARM telah resmi terdaftar dalam sistem <strong style="white-space: nowrap;">NIB: 1712240062057</strong> dan menjamin aspek kehalalan melalui <strong>Sertifikasi HALAL Indonesia</strong>. Dengan standar manajemen nutrisi yang ketat dan sistem panen harian, kami memastikan setiap helai sayuran yang sampai ke meja Anda adalah produk yang legal, aman, dan penuh nutrisi.',
         'about-img': 'assets/hero_lettuce.png',
         'contact-address': 'Jalan Raya Tanjungsari Nomor 345, RT/RW 003/004, Dusun Langensari, Desa Gudang, Kec. Tanjungsari, Kab. Sumedang, Jawa Barat, 45362',
         'contact-wa': '085176960803 | 085220933263',
