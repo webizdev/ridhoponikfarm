@@ -533,6 +533,27 @@ nav a:hover {
     box-shadow: 0 20px 40px rgba(0,0,0,0.1);
 }
 
+/* Cart Sidebar */
+.cart-sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 400px;
+    height: 100%;
+    background-color: var(--surface-container-lowest);
+    z-index: 2000;
+    padding: 2.5rem;
+    box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+    transform: translateX(100%);
+    visibility: hidden; /* Ensure it's totally hidden when closed */
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cart-sidebar.open {
+    transform: translateX(0);
+    visibility: visible;
+}
+
 @media (max-width: 968px) {
     .nav-links-desktop {
         display: none !important;
@@ -633,6 +654,19 @@ nav a:hover {
     .footer-grid {
         grid-template-columns: 1fr 1fr;
         gap: 3rem;
+    }
+
+    .category-filters {
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding: 0.5rem var(--gutter) 1.5rem;
+        margin-left: calc(-1 * var(--gutter));
+        margin-right: calc(-1 * var(--gutter));
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        gap: 0.75rem;
     }
 }
 
