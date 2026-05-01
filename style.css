@@ -419,8 +419,7 @@ nav a:hover {
 
 .product-info {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    flex-direction: column;
     margin-bottom: 1rem;
     flex-grow: 1;
 }
@@ -437,15 +436,18 @@ nav a:hover {
     overflow: hidden;
 }
 
-.product-info p {
+.product-desc {
     font-size: 0.85rem;
     color: var(--secondary);
+    margin-bottom: 0.5rem;
 }
 
 .product-price {
     font-weight: 700;
     color: var(--primary);
     font-size: 1.1rem;
+    margin-top: auto; /* Memastikan harga selalu di atas tombol meskipun deskripsi pendek */
+    padding-top: 0.5rem;
 }
 
 .add-to-cart-btn {

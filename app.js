@@ -181,11 +181,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         <img src="${product.image}" alt="${product.name}">
                     </div>
                     <div class="product-info">
-                        <div>
-                            <h3>${product.name}</h3>
-                            <p>${product.description || ''}</p>
-                        </div>
-                        <span class="product-price">${(product.price / 1000).toFixed(0)}rb</span>
+                        <h3>${product.name}</h3>
+                        <p class="product-desc">${product.description || ''}</p>
+                        <p class="product-price">IDR ${parseInt(product.price).toLocaleString('id-ID')}</p>
                     </div>
                     <button class="add-to-cart-btn" 
                         data-id="${product.id}" 
