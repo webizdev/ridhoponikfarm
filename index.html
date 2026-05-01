@@ -3,40 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Ridhoponic Farm menyediakan sayuran hidroponik segar, premium, dan bebas pestisida di Sumedang. Pilihan terbaik untuk gaya hidup sehat Anda.">
     <title>RIDHOPONICFARM | Pertanian Hidroponik Premium Sumedang</title>
-    <meta name="description" content="Pertanian Hidroponik Premium di Sumedang. Menyediakan Selada Hijau, Daun Bawang, Pegagan, dan Popohan segar langsung dari kebun.">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Serif:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Serif:wght@400;700&display=swap" rel="stylesheet">
     
     <!-- Icons -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+
+    <!-- CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+    <!-- Navigation -->
     <header>
         <div class="container nav-container">
             <a href="#" class="logo">RIDHOPONICFARM</a>
             <nav id="main-nav">
                 <ul class="nav-links-desktop">
+                    <li><a href="#hero">Beranda</a></li>
                     <li><a href="#features">Keunggulan</a></li>
-                    <li><a href="#catalog">Katalog</a></li>
-                    <li><a href="#about">Tentang</a></li>
-                    <li><a href="#contact">Kontak</a></li>
+                    <li><a href="#catalog">Katalog Produk</a></li>
+                    <li><a href="#process">Cara Panen</a></li>
+                    <li><a href="#about">Tentang Kami</a></li>
                 </ul>
             </nav>
             <div class="header-actions">
-                <button id="cart-toggle" class="cart-icon-btn">
+                <a href="#contact" class="cta-button hide-mobile">Hubungi Kami</a>
+                <button id="cart-btn" class="cart-icon-btn">
                     <span class="material-symbols-outlined">shopping_cart</span>
                     <span id="cart-count" class="cart-badge">0</span>
                 </button>
-                <a href="https://wa.me/6285176960803" class="cta-button hide-mobile" target="_blank">Hubungi Kami</a>
-                <button id="menu-toggle" class="menu-toggle">
+                <button class="menu-toggle" id="menu-toggle">
                     <span class="material-symbols-outlined">menu</span>
                 </button>
             </div>
@@ -48,53 +50,45 @@
         <section id="hero" class="hero">
             <div class="container hero-grid">
                 <div class="hero-content reveal">
-                    <span id="hero-subtitle">Pertanian Berkelanjutan</span>
-                    <h1 id="hero-title">Hidroponik Premium, <br>Segar Sampai Meja Anda.</h1>
-                    <p id="hero-desc">Menanam sayuran padat nutrisi di lingkungan terkontrol tanpa pestisida. Pengiriman segar langsung dari kebun kami di Sumedang.</p>
+                    <span>Premium Hydroponics</span>
+                    <h1>Hidroponik Premium,<br>Segar Sampai Meja Anda.</h1>
+                    <p>Rasakan kerenyahan sayuran yang ditanam dengan cinta dan teknologi modern di Tanjungsari, Sumedang. Bebas pestisida, kaya nutrisi, dan dipanen di hari yang sama untuk menjaga kualitas puncak.</p>
                     <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                        <a href="#catalog" class="cta-button">Lihat Katalog</a>
-                        <a href="https://app.grab.com/s/fYrqMRNz" class="cta-button grab-button" target="_blank">Order via Grab</a>
-                        <a href="#process" class="cta-button" style="background: transparent; border: 1px solid var(--outline); color: var(--primary);">Pelajari Proses</a>
+                        <a href="#catalog" class="cta-button">Lihat Produk</a>
+                        <a href="#about" class="cta-button" style="background: transparent; color: var(--primary); border: 1px solid var(--primary);">Cerita Kami</a>
                     </div>
                 </div>
                 <div class="hero-image reveal">
-                    <img id="hero-img" src="assets/hero_lettuce.png" alt="Selada Hidroponik Premium">
+                    <!-- Gunakan placeholder image premium atau foto produk asli jika ada -->
+                    <img src="assets/hero_lettuce.png" alt="Sayuran Segar Ridhoponic Farm">
                 </div>
             </div>
         </section>
 
-        <!-- Features Section -->
+        <!-- Features / Bento Grid -->
         <section id="features" class="features">
             <div class="container">
-                <h2 class="section-title reveal">Mengapa Ridhoponic?</h2>
-                <div class="bento-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
-                    <div class="bento-item reveal">
-                        <span class="material-symbols-outlined" style="color: var(--primary);">verified</span>
-                        <div>
-                            <h3>Terverifikasi Legal</h3>
-                            <p>Beroperasi resmi dengan izin <strong style="white-space: nowrap;">NIB: 1712240062057</strong> untuk menjamin profesionalitas bisnis.</p>
-                        </div>
-                    </div>
+                <h2 class="section-title reveal">Mengapa Ridhoponic Farm?</h2>
+                <div class="bento-grid">
                     <div class="bento-item featured reveal">
-                        <span class="material-symbols-outlined" style="color: var(--accent);">workspace_premium</span>
-                        <div>
-                            <h3>Jaminan Halal</h3>
-                            <p>Proses produksi bersih dan memenuhi standar syariat sesuai Sertifikasi HALAL Indonesia.</p>
-                        </div>
+                        <span class="material-symbols-outlined">eco</span>
+                        <h3>100% Bebas Pestisida</h3>
+                        <p>Ditanam dalam lingkungan green house yang higienis, memastikan sayuran bersih dan aman dikonsumsi seluruh anggota keluarga tanpa perlu khawatir residu kimia.</p>
                     </div>
                     <div class="bento-item reveal">
-                        <span class="material-symbols-outlined" style="color: var(--primary);">eco</span>
-                        <div>
-                            <h3>Bebas Pestisida</h3>
-                            <p>Menggunakan sistem NFT/DFT untuk menghasilkan sayuran yang lebih sehat dan aman dikonsumsi.</p>
-                        </div>
+                        <span class="material-symbols-outlined">water_drop</span>
+                        <h3>Nutrisi Optimal</h3>
+                        <p>Air dan nutrisi diatur secara presisi setiap hari untuk menghasilkan sayuran yang lebih renyah, segar, dan tahan lama.</p>
                     </div>
                     <div class="bento-item reveal">
-                        <span class="material-symbols-outlined" style="color: var(--primary);">temp_preferences_custom</span>
-                        <div>
-                            <h3>Segar dari Kebun</h3>
-                            <p>Sistem panen dan kirim langsung pada hari yang sama untuk menjaga tekstur dan rasa terbaik.</p>
-                        </div>
+                        <span class="material-symbols-outlined">local_shipping</span>
+                        <h3>Panen Hari H</h3>
+                        <p>Kami memanen sayuran di pagi hari khusus untuk pesanan Anda, mengunci rasa manis dan kesegaran alami sayuran.</p>
+                    </div>
+                    <div class="bento-item reveal">
+                        <span class="material-symbols-outlined">verified</span>
+                        <h3>Legalitas Terjamin</h3>
+                        <p>Memiliki Sertifikat HALAL Indonesia dan Nomor Induk Berusaha (NIB), bukti komitmen kami pada kualitas dan kepercayaan Anda.</p>
                     </div>
                 </div>
             </div>
@@ -103,51 +97,52 @@
         <!-- Product Catalog -->
         <section id="catalog" class="catalog">
             <div class="container">
-                <h2 class="section-title reveal">Katalog Ridhoponikfarm</h2>
+                <h2 class="section-title reveal" style="margin-bottom: 1.5rem;">Hasil Panen Segar</h2>
+                <p class="reveal" style="text-align: center; max-width: 600px; margin: 0 auto 3rem; color: var(--text-on-surface-variant);">Pilih sayuran favorit Anda. Semua produk ditanam dengan standar hidroponik premium.</p>
                 
                 <div class="category-filters reveal">
                     <button class="filter-btn active" data-filter="all">Semua</button>
-                    <button class="filter-btn" data-filter="harvest">Hasil Panen</button>
-                    <button class="filter-btn" data-filter="supplies">Bibit, Peralatan & Vitamin</button>
+                    <button class="filter-btn" data-filter="Hasil Panen">Hasil Panen</button>
+                    <button class="filter-btn" data-filter="Bibit, Peralatan & Vitamin">Bibit, Peralatan & Vitamin</button>
                 </div>
 
-                <div class="catalog-grid" id="catalog-grid-container">
-                    <!-- Products will be injected here via app.js -->
-                    <div class="loading-products" style="grid-column: 1/-1; text-align: center; padding: 3rem;">
+                <div class="catalog-grid reveal" id="product-list">
+                    <!-- Products will be dynamically loaded via JS -->
+                    <div style="text-align: center; width: 100%; grid-column: 1 / -1; padding: 3rem;">
                         <span class="material-symbols-outlined" style="font-size: 3rem; color: var(--primary); animation: spin 2s linear infinite;">sync</span>
-                        <p>Memuat produk segar...</p>
+                        <p style="margin-top: 1rem;">Memuat katalog produk...</p>
                     </div>
                 </div>
-
+                
                 <div class="load-more-container reveal">
-                    <button id="load-more-btn" class="load-more-btn">Lihat Produk Lainnya</button>
+                    <button id="load-more-btn" class="load-more-btn" style="display: none;">Muat Lebih Banyak Produk</button>
                 </div>
             </div>
         </section>
 
-        <!-- Process Section -->
+        <!-- The Process -->
         <section id="process" class="process-section">
             <div class="container">
-                <h2 class="section-title reveal">Rantai Pasok Transparan</h2>
-                <div class="process-grid">
-                    <div class="reveal process-item">
-                        <span class="material-symbols-outlined">potted_plant</span>
-                        <h4>Pembibitan</h4>
-                        <p>Benih Non-GMO berkualitas tinggi.</p>
+                <h2 class="section-title reveal" style="font-size: 2rem;">Dari Kebun Ke Meja Anda</h2>
+                <div class="process-grid reveal">
+                    <div class="process-item">
+                        <span class="material-symbols-outlined">nest_eco_leaf</span>
+                        <h4>1. Penyemaian</h4>
+                        <p>Pemilihan bibit unggul kualitas terbaik.</p>
                     </div>
-                    <div class="reveal process-item">
-                        <span class="material-symbols-outlined">vitals</span>
-                        <h4>Kultivasi</h4>
-                        <p>Pemantauan nutrisi pintar.</p>
+                    <div class="process-item">
+                        <span class="material-symbols-outlined">science</span>
+                        <h4>2. Perawatan Terkontrol</h4>
+                        <p>Pemantauan nutrisi pH & TDS setiap hari.</p>
                     </div>
-                    <div class="reveal process-item">
+                    <div class="process-item">
                         <span class="material-symbols-outlined">inventory_2</span>
-                        <h4>Pengemasan</h4>
-                        <p>Ramah lingkungan & higienis.</p>
+                        <h4>3. Panen Selektif</h4>
+                        <p>Sayuran dipotong dan disortir dengan hati-hati.</p>
                     </div>
-                    <div class="reveal process-item">
-                        <span class="material-symbols-outlined">local_shipping</span>
-                        <h4>Pengiriman</h4>
+                    <div class="process-item">
+                        <span class="material-symbols-outlined">moped</span>
+                        <h4>4. Pengiriman</h4>
                         <p>Langsung ke pintu Anda.</p>
                     </div>
                 </div>
@@ -220,9 +215,9 @@
                         </div>
                     </div>
                     
-                    <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
-                        <a href="https://wa.me/6285176960803" class="cta-button" style="flex: 1; text-align: center;">Kirim Pesan WhatsApp</a>
-                        <a href="https://app.grab.com/s/fYrqMRNz" class="cta-button grab-button" style="flex: 1; text-align: center;" target="_blank">Order via Grab</a>
+                    <div class="contact-buttons">
+                        <a href="https://wa.me/6285176960803" class="cta-button" style="text-align: center;">Kirim Pesan WhatsApp</a>
+                        <a href="https://app.grab.com/s/fYrqMRNz" class="cta-button grab-button" style="text-align: center;" target="_blank">Order via Grab</a>
                     </div>
                 </div>
                 <div class="map-container reveal">
@@ -280,46 +275,43 @@
                         <li><a href="#features">Keunggulan</a></li>
                         <li><a href="#catalog">Katalog Produk</a></li>
                         <li><a href="#about">Tentang Kami</a></li>
-                        <li><a href="#contact">Hubungi Kami</a></li>
                     </ul>
                 </div>
 
                 <!-- Links Col 2 -->
                 <div class="footer-col reveal">
-                    <h4>Kategori</h4>
+                    <h4>Kebijakan</h4>
                     <ul class="footer-links">
-                        <li><a href="#catalog">Hasil Panen</a></li>
-                        <li><a href="#catalog">Bibit Sayuran</a></li>
-                        <li><a href="#catalog">Peralatan Hidroponik</a></li>
-                        <li><a href="#catalog">Nutrisi & Vitamin</a></li>
+                        <li><a href="#">Syarat & Ketentuan</a></li>
+                        <li><a href="#">Kebijakan Pengiriman</a></li>
+                        <li><a href="#">Panduan Retur</a></li>
+                        <li><a href="#">Pertanyaan Umum (FAQ)</a></li>
                     </ul>
                 </div>
 
-                <!-- Contact Col -->
+                <!-- Social Col -->
                 <div class="footer-col reveal">
-                    <h4>Hubungi Kami</h4>
-                    <p style="margin-bottom: 1rem;">Dusun Langensari, Desa Gudang, Kec. Tanjungsari, Kab. Sumedang, Jawa Barat.</p>
-                    <p>WA: 085176960803</p>
+                    <h4>Terhubung Bersama Kami</h4>
+                    <p>Dapatkan update terbaru tentang hasil panen dan tips hidroponik di media sosial kami.</p>
                     <div class="social-links">
-                        <a href="https://www.facebook.com/share/1EekMnswm7/" class="social-btn" target="_blank" title="Facebook Ridho Muhammad Ridwan"><i class="fa-brands fa-facebook-f"></i></a>
-                        <a href="https://www.instagram.com/hidroponikridhoponic?igsh=MWV3YXdpYWZqaTRuaA==" class="social-btn" target="_blank" title="Instagram @hidroponikridhoponic"><i class="fa-brands fa-instagram"></i></a>
-                        <a href="https://wa.me/6285176960803" class="social-btn" target="_blank" title="WhatsApp Ridhoponic Farm"><i class="fa-brands fa-whatsapp"></i></a>
+                        <a href="#" class="social-btn" aria-label="Instagram"><span class="material-symbols-outlined">photo_camera</span></a>
+                        <a href="https://wa.me/6285176960803" class="social-btn" aria-label="WhatsApp"><span class="material-symbols-outlined">forum</span></a>
+                        <a href="#" class="social-btn" aria-label="Facebook"><span class="material-symbols-outlined">thumb_up</span></a>
                     </div>
                 </div>
             </div>
 
-            <div class="footer-bottom">
-                <div class="copyright">
-                    &copy; 2026 RIDHOPONICFARM | Semua Hak Dilindungi.
-                </div>
+            <div class="footer-bottom reveal">
+                <p>&copy; 2026 Ridhoponic Farm. Seluruh Hak Cipta Dilindungi.</p>
                 <div class="legal-links">
-                    <a href="#">Kebijakan Privasi</a>
-                    <a href="#">Syarat & Ketentuan</a>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
                 </div>
             </div>
         </div>
     </footer>
 
+    <!-- App Logic -->
     <script src="app.js"></script>
 </body>
 </html>
